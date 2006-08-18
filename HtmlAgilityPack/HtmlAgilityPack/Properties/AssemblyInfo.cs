@@ -1,4 +1,4 @@
-// HtmlAgilityPack V1.0 - Simon Mourier <simon_mourier@hotmail.com>
+// HtmlAgilityPack V1.0 - Simon Mourier <simon underscore mourier at hotmail dot com>
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Simon Mourier")]
 [assembly: AssemblyProduct("Html Agility Pack")]
-[assembly: AssemblyCopyright("Copyright (C) 2003-2005 Simon Mourier <simon_mourier@hotmail.com> All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright (C) 2003-2005 Simon Mourier <simon underscore mourier at hotmail dot com> All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
