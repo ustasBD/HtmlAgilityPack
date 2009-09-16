@@ -7,7 +7,7 @@ namespace HtmlAgilityPack
 	/// <summary>
 	/// Represents an HTML attribute.
 	/// </summary>
-	public class HtmlAttribute: IComparable
+    public class HtmlAttribute : IComparable
 	{
 		internal int _line = 0;
 		internal int _lineposition = 0;
@@ -78,9 +78,9 @@ namespace HtmlAgilityPack
 			{
 				if (_name == null)
 				{
-					_name = _ownerdocument._text.Substring(_namestartindex, _namelength).ToLower();
+                    _name = _ownerdocument._text.Substring(_namestartindex, _namelength);
 				}
-				return _name;
+                return _name.ToLower();
 			}
 			set
 			{
@@ -88,7 +88,7 @@ namespace HtmlAgilityPack
 				{
 					throw new ArgumentNullException("value");
 				}
-				_name = value.ToLower();
+                _name = value;
 				if (_ownernode != null)
 				{
 					_ownernode._innerchanged = true;
@@ -96,6 +96,23 @@ namespace HtmlAgilityPack
 				}
 			}
 		}
+        /// <summary>
+        /// Name of attribute with original case
+        /// </summary>
+        public string OriginalName
+        {
+            get
+            {
+                return _name;
+            }
+        }
+        private AttributeValueQuote _quoteType = AttributeValueQuote.DoubleQuote;
+
+        public AttributeValueQuote QuoteType
+        {
+            get { return _quoteType; }
+            set { _quoteType = value; }
+        }
 
 		/// <summary>
 		/// Gets or sets the value of the attribute.
@@ -176,7 +193,15 @@ namespace HtmlAgilityPack
 			}
 		}
 
-	}
 
-
+        public void Remove()
+        {
+            this._ownernode.Attributes.Remove(this);
+        }
+    }
+    public enum AttributeValueQuote
+    {
+        SingleQuote,
+        DoubleQuote
+    }
 }

@@ -4,7 +4,7 @@ using System.Collections;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
-
+using System.Collections.Generic;
 namespace HtmlAgilityPack
 {
 	/// <summary>
@@ -50,7 +50,7 @@ namespace HtmlAgilityPack
 		internal int _namestartindex = 0;
 		internal int _namelength = 0;
 		internal bool _starttag = false;
-		internal string _name;
+        private string _name;
 		internal HtmlNode _prevwithsamename = null;
 		internal HtmlNode _endnode;
 
@@ -275,8 +275,7 @@ namespace HtmlAgilityPack
 				}
 			}
 		}
-
-		internal HtmlNode(HtmlNodeType type, HtmlDocument ownerdocument, int index)
+        public HtmlNode(HtmlNodeType type, HtmlDocument ownerdocument, int index)
 		{
 			_nodetype = type;
 			_ownerdocument = ownerdocument;
@@ -285,17 +284,17 @@ namespace HtmlAgilityPack
 			switch(type)
 			{
 				case HtmlNodeType.Comment:
-					_name = HtmlNodeTypeNameComment;
+                    Name = HtmlNodeTypeNameComment;
 					_endnode = this;
 					break;
 
 				case HtmlNodeType.Document:
-					_name = HtmlNodeTypeNameDocument;
+                    Name = HtmlNodeTypeNameDocument;
 					_endnode = this;
 					break;
 
 				case HtmlNodeType.Text:
-					_name = HtmlNodeTypeNameText;
+                    Name = HtmlNodeTypeNameText;
 					_endnode = this;
 					break;
 			}
@@ -536,16 +535,22 @@ namespace HtmlAgilityPack
 			{
 				if (_name == null)
 				{
-					_name = _ownerdocument._text.Substring(_namestartindex, _namelength).ToLower();
+                    Name = _ownerdocument._text.Substring(_namestartindex, _namelength);
 				}
-				return _name;
+                return _name.ToLower();
 			}
 			set
 			{
 				_name = value;
 			}
 		}
-
+        public string OriginalName
+        {
+            get
+            {
+                return _name;
+            }
+        }
 		/// <summary>
 		/// Gets or Sets the text between the start and end tags of the object.
 		/// </summary>
@@ -675,7 +680,7 @@ namespace HtmlAgilityPack
 			}
 
 			HtmlNode node = CloneNode(deep);
-			node._name = newName;
+            node.Name = newName;
 			return node;
 		}
 
@@ -687,7 +692,7 @@ namespace HtmlAgilityPack
 		public HtmlNode CloneNode(bool deep)
 		{
 			HtmlNode node = _ownerdocument.CreateNode(_nodetype);
-			node._name = Name;
+            node.Name = Name;
 
 			switch(_nodetype)
 			{
@@ -1348,7 +1353,7 @@ namespace HtmlAgilityPack
 		internal void WriteAttribute(TextWriter outText, HtmlAttribute att)
 		{
 			string name;
-
+            string quote = att.QuoteType == AttributeValueQuote.DoubleQuote ? "\"" : "'";
 			if (_ownerdocument.OptionOutputAsXml)
 			{
 				if (_ownerdocument.OptionOutputUpperCase)
@@ -1359,8 +1364,10 @@ namespace HtmlAgilityPack
 				{
 					name = att.XmlName;
 				}
+                if (_ownerdocument.OptionOutputOriginalCase)
+                    name = att.OriginalName;
 
-				outText.Write(" " + name + "=\"" + HtmlDocument.HtmlEncode(att.XmlValue) + "\"");
+                outText.Write(" " + name + "=" + quote + HtmlDocument.HtmlEncode(att.XmlValue) + quote);
 			}
 			else
 			{
@@ -1390,12 +1397,12 @@ namespace HtmlAgilityPack
 					}
 					else
 					{
-						outText.Write(" " + name + "=\"" + att.Value + "\"");
+                        outText.Write(" " + name + "=" + quote + att.Value + quote);
 					}
 				}
 				else
 				{
-					outText.Write(" " + name + "=\"" + att.Value + "\"");
+                    outText.Write(" " + name + "=" + quote + att.Value + quote);
 				}
 			}
 		}
@@ -1571,6 +1578,9 @@ namespace HtmlAgilityPack
 						name = Name;
 					}
 
+                    if (_ownerdocument.OptionOutputOriginalCase)
+                        name = OriginalName;
+
 					if (_ownerdocument.OptionOutputAsXml)
 					{
 						if (name.Length > 0)
@@ -1700,6 +1710,10 @@ namespace HtmlAgilityPack
 					{
 						name = Name;
 					}
+
+                    if (_ownerdocument.OptionOutputOriginalCase)
+                        name = OriginalName;
+
 					writer.WriteStartElement(name);
 					WriteAttributes(writer, this);
 
@@ -1755,6 +1769,169 @@ namespace HtmlAgilityPack
 			sw.Flush();
 			return sw.ToString();
 		}
+
+
+
+        /// <summary>
+        /// Returns a collection of all ancestor nodes of this element.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> Ancestors()
+        {
+            var node = this.ParentNode;
+            while (node.ParentNode != null)
+            {
+                yield return node.ParentNode;
+                node = node.ParentNode;
+            }
+        }
+        /// <summary>
+        /// Returns a collection of all ancestor nodes of this element.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> AncestorsAndSelf()
+        {
+            for (HtmlNode n = this; n != null; n = n.ParentNode)
+                yield return n;
+        }
+
+        /// <summary>
+        /// Get Ancestors with matching name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> Ancestors(string name)
+        {
+            for (HtmlNode n = this.ParentNode; n != null; n = n.ParentNode)
+                if (n.Name == name)
+                    yield return n;
+        }
+
+        /// <summary>
+        /// Gets all anscestor nodes and the current node
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> AncestorsAndSelf(string name)
+        {
+            for (HtmlNode n = this; n != null; n = n.ParentNode)
+                if (n.Name == name)
+                    yield return n;
+        }
+        /// <summary>
+        /// Returns a collection of all descendant nodes of this element, in document order
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> DescendantsAndSelf()
+        {
+            yield return this;
+            foreach (HtmlNode n in DescendantNodes())
+            {
+                HtmlNode el = n as HtmlNode;
+                if (el != null)
+                    yield return el;
+            }
+        }
+        /// <summary>
+        /// Returns a collection of all descendant nodes of this element, in document order
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> DescendantNodesAndSelf()
+        {
+            return DescendantsAndSelf();
+        }
+
+
+        /// <summary>
+        /// Removes node from parent collection
+        /// </summary>
+        public void Remove()
+        {
+            if (this.ParentNode != null)
+                this.ParentNode.ChildNodes.Remove(this);
+        }
+        /// <summary>
+        /// Gets all Attributes with name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlAttribute> ChildAttributes(string name)
+        {
+            return Attributes.AttributesWithName(name);
+        }
+
+        /// <summary>
+        /// Gets all Descendant nodes for this node and each of child nodes
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> DescendantNodes()
+        {
+            foreach (HtmlNode node in ChildNodes)
+            {
+                yield return node;
+                foreach (HtmlNode descendant in node.DescendantNodes())
+                    yield return descendant;
+            }
+        }
+        /// <summary>
+        /// Gets all Descendant nodes in enumerated list
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> Descendants()
+        {
+            foreach (HtmlNode node in DescendantNodes())
+            {
+                yield return node;
+            }
+        }
+        /// <summary>
+        /// Gets all descendant nodes including this node
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> DescendantsAndSelf(string name)
+        {
+            yield return this;
+            foreach (HtmlNode node in Descendants())
+                if (node.Name == name)
+                    yield return node;
+        }
+        /// <summary>
+        /// Get all descendant nodes with matching name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> Descendants(string name)
+        {
+            foreach (HtmlNode node in Descendants())
+                if (node.Name == name)
+                    yield return node;
+        }
+
+        /// <summary>
+        /// Gets matching first generation child nodes matching name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IEnumerable<HtmlNode> Elements(string name)
+        {
+            foreach (HtmlNode node in ChildNodes)
+                if (node.Name == name)
+                    yield return node;
+        }
+
+        /// <summary>
+        /// Gets first generation child node matching name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public HtmlNode Element(string name)
+        {
+            foreach (HtmlNode node in ChildNodes)
+                if (node.Name == name)
+                    return node;
+            return null;
+        }
 	}
 
 }

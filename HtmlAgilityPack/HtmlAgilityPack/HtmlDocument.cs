@@ -82,6 +82,10 @@ namespace HtmlAgilityPack
 		public bool OptionOutputUpperCase = false;
 
 		/// <summary>
+        /// Defines if name must be output with it's original case. Useful for asp.net tags and attributes
+        /// </summary>
+        public bool OptionOutputOriginalCase = false;
+		/// <summary>
 		/// Defines if attribute value output must be optimized (not bound with double quotes if it is possible). Default is false.
 		/// </summary>
 		public bool OptionOutputOptimizeAttributeValues = false;
@@ -840,7 +844,7 @@ namespace HtmlAgilityPack
 				throw new ArgumentNullException("name");
 			}
 			HtmlNode node = CreateNode(HtmlNodeType.Element);
-			node._name = name;
+			node.Name = name;
 			return node;
 		}
 
@@ -1267,7 +1271,7 @@ namespace HtmlAgilityPack
 						if ((_c == '\'') || (_c == '"'))
 						{
 							_state = ParseState.QuotedAttributeValue;
-							PushAttributeValueStart(_index);
+							PushAttributeValueStart(_index,_c);
 							lastquote = _c;
 							continue;
 						}
@@ -1561,7 +1565,13 @@ namespace HtmlAgilityPack
 
 		private void PushAttributeValueStart(int index)
 		{
+            PushAttributeValueStart(index, 0);
+        }
+		private void PushAttributeValueStart(int index, int quote)
+		{
 			_currentattribute._valuestartindex = index;
+            if (quote=='\'')
+                _currentattribute.QuoteType = AttributeValueQuote.SingleQuote;
 		}
 
 		private void PushAttributeValueEnd(int index)
@@ -1683,7 +1693,7 @@ namespace HtmlAgilityPack
 			if (!_currentnode._starttag)
 				return;
 
-			string name = CurrentNodeName().ToLower();
+			string name = CurrentNodeName();
 			FixNestedTag(name, GetResetters(name));
 		}
 		
