@@ -1520,7 +1520,7 @@ namespace HtmlAgilityPack
 							if (content != null)
 							{
 								string charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
-								if (charset != null)
+								if (charset != null && (charset = charset.Trim()).Length > 0)
 								{
 									_declaredencoding = Encoding.GetEncoding(charset);
 									if (_onlyDetectEncoding)
