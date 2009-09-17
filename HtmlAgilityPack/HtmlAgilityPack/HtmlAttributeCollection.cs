@@ -45,7 +45,7 @@ namespace HtmlAgilityPack
         /// <param name="index">The index of the attribute to remove.</param>
         public void RemoveAt(int index)
         {
-            var att = (HtmlAttribute) items[index];
+            HtmlAttribute att =  items[index];
             _hashitems.Remove(att.Name);
             items.RemoveAt(index);
 
@@ -262,7 +262,7 @@ namespace HtmlAgilityPack
             string lname = name.ToLower();
             for (int i = 0; i < items.Count; i++)
             {
-                var att = (HtmlAttribute) items[i];
+                HtmlAttribute att = items[i];
                 if (att.Name == lname)
                 {
                     RemoveAt(i);

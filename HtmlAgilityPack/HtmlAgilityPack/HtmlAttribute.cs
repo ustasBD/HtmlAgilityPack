@@ -1,112 +1,114 @@
 // HtmlAgilityPack V1.0 - Simon Mourier <simon underscore mourier at hotmail dot com>
+
+#region
+
 using System;
-using System.Collections;
+
+#endregion
 
 namespace HtmlAgilityPack
 {
-	/// <summary>
-	/// Represents an HTML attribute.
-	/// </summary>
+    /// <summary>
+    /// Represents an HTML attribute.
+    /// </summary>
     public class HtmlAttribute : IComparable
-	{
-		internal int _line = 0;
-		internal int _lineposition = 0;
-		internal int _streamposition = 0;
-		internal int _namestartindex = 0;
-		internal int _namelength = 0;
-		internal int _valuestartindex = 0;
-		internal int _valuelength = 0;
-		internal HtmlDocument _ownerdocument; // attribute can exists without a node
-		internal HtmlNode _ownernode;
-		internal string _name;
-		internal string _value;
+    {
+        #region Fields
 
-		internal HtmlAttribute(HtmlDocument ownerdocument)
-		{
-			_ownerdocument = ownerdocument;
-		}
+        private int _line;
+        internal int _lineposition;
+        internal string _name;
+        internal int _namelength;
+        internal int _namestartindex;
+        internal HtmlDocument _ownerdocument; // attribute can exists without a node
+        internal HtmlNode _ownernode;
+        private AttributeValueQuote _quoteType = AttributeValueQuote.DoubleQuote;
+        internal int _streamposition;
+        internal string _value;
+        internal int _valuelength;
+        internal int _valuestartindex;
 
-		/// <summary>
-		/// Creates a duplicate of this attribute.
-		/// </summary>
-		/// <returns>The cloned attribute.</returns>
-		public HtmlAttribute Clone()
-		{
-			HtmlAttribute att = new HtmlAttribute(_ownerdocument);
-			att.Name = Name;
-			att.Value = Value;
-			return att;
-		}
+        #endregion
 
-		/// <summary>
-		/// Compares the current instance with another attribute. Comparison is based on attributes' name.
-		/// </summary>
-		/// <param name="obj">An attribute to compare with this instance.</param>
-		/// <returns>A 32-bit signed integer that indicates the relative order of the names comparison.</returns>
-		public int CompareTo(object obj)
-		{
-			HtmlAttribute att = obj as HtmlAttribute;
-			if (att == null)
-			{
-				throw new ArgumentException("obj");
-			}
-			return Name.CompareTo(att.Name);
-		}
+        #region Constructors
 
-		internal string XmlName
-		{
-			get
-			{
-				return HtmlDocument.GetXmlName(Name);
-			}
-		}
+        internal HtmlAttribute(HtmlDocument ownerdocument)
+        {
+            _ownerdocument = ownerdocument;
+        }
 
-		internal string XmlValue
-		{
-			get
-			{
-				return Value;
-			}
-		}
+        #endregion
 
-		/// <summary>
-		/// Gets the qualified name of the attribute.
-		/// </summary>
-		public string Name
-		{
-			get
-			{
-				if (_name == null)
-				{
+        #region Properties
+
+        /// <summary>
+        /// Gets the line number of this attribute in the document.
+        /// </summary>
+        public int Line
+        {
+            get { return _line; }
+            internal set { _line = value; }
+        }
+
+        /// <summary>
+        /// Gets the column number of this attribute in the document.
+        /// </summary>
+        public int LinePosition
+        {
+            get { return _lineposition; }
+        }
+
+        /// <summary>
+        /// Gets the qualified name of the attribute.
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                if (_name == null)
+                {
                     _name = _ownerdocument._text.Substring(_namestartindex, _namelength);
-				}
+                }
                 return _name.ToLower();
-			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("value");
-				}
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
                 _name = value;
-				if (_ownernode != null)
-				{
-					_ownernode._innerchanged = true;
-					_ownernode._outerchanged = true;
-				}
-			}
-		}
+                if (_ownernode != null)
+                {
+                    _ownernode._innerchanged = true;
+                    _ownernode._outerchanged = true;
+                }
+            }
+        }
+
         /// <summary>
         /// Name of attribute with original case
         /// </summary>
         public string OriginalName
         {
-            get
-            {
-                return _name;
-            }
+            get { return _name; }
         }
-        private AttributeValueQuote _quoteType = AttributeValueQuote.DoubleQuote;
+
+        /// <summary>
+        /// Gets the HTML document to which this attribute belongs.
+        /// </summary>
+        public HtmlDocument OwnerDocument
+        {
+            get { return _ownerdocument; }
+        }
+
+        /// <summary>
+        /// Gets the HTML node to which this attribute belongs.
+        /// </summary>
+        public HtmlNode OwnerNode
+        {
+            get { return _ownernode; }
+        }
 
         public AttributeValueQuote QuoteType
         {
@@ -114,91 +116,123 @@ namespace HtmlAgilityPack
             set { _quoteType = value; }
         }
 
-		/// <summary>
-		/// Gets or sets the value of the attribute.
-		/// </summary>
-		public string Value
-		{
-			get
-			{
-				if (_value == null)
-				{
-					_value = _ownerdocument._text.Substring(_valuestartindex, _valuelength);
-				}
-				return _value;
-			}
-			set
-			{
-				_value = value;
-				if (_ownernode != null)
-				{
-					_ownernode._innerchanged = true;
-					_ownernode._outerchanged = true;
-				}
-			}
-		}
+        /// <summary>
+        /// Gets the stream position of this attribute in the document, relative to the start of the document.
+        /// </summary>
+        public int StreamPosition
+        {
+            get { return _streamposition; }
+        }
 
-		/// <summary>
-		/// Gets the line number of this attribute in the document.
-		/// </summary>
-		public int Line
-		{
-			get
-			{
-				return _line;
-			}
-		}
+        /// <summary>
+        /// Gets or sets the value of the attribute.
+        /// </summary>
+        public string Value
+        {
+            get
+            {
+                if (_value == null)
+                {
+                    _value = _ownerdocument._text.Substring(_valuestartindex, _valuelength);
+                }
+                return _value;
+            }
+            set
+            {
+                _value = value;
+                if (_ownernode != null)
+                {
+                    _ownernode._innerchanged = true;
+                    _ownernode._outerchanged = true;
+                }
+            }
+        }
 
-		/// <summary>
-		/// Gets the column number of this attribute in the document.
-		/// </summary>
-		public int LinePosition
-		{
-			get
-			{
-				return _lineposition;
-			}
-		}
+        internal string XmlName
+        {
+            get { return HtmlDocument.GetXmlName(Name); }
+        }
 
-		/// <summary>
-		/// Gets the stream position of this attribute in the document, relative to the start of the document.
-		/// </summary>
-		public int StreamPosition
-		{
-			get
-			{
-				return _streamposition;
-			}
-		}
+        internal string XmlValue
+        {
+            get { return Value; }
+        }
 
-		/// <summary>
-		/// Gets the HTML node to which this attribute belongs.
-		/// </summary>
-		public HtmlNode OwnerNode
-		{
-			get
-			{
-				return _ownernode;
-			}
-		}
+        public string XPath
+        {
+            get
+            {
+                string basePath = (OwnerNode == null) ? "/" : OwnerNode.XPath + "/";
+                return basePath + GetRelativeXpath();
+            }
+        }
 
-		/// <summary>
-		/// Gets the HTML document to which this attribute belongs.
-		/// </summary>
-		public HtmlDocument OwnerDocument
-		{
-			get
-			{
-				return _ownerdocument;
-			}
-		}
+        #endregion
+
+        #region IComparable Members
+
+        /// <summary>
+        /// Compares the current instance with another attribute. Comparison is based on attributes' name.
+        /// </summary>
+        /// <param name="obj">An attribute to compare with this instance.</param>
+        /// <returns>A 32-bit signed integer that indicates the relative order of the names comparison.</returns>
+        public int CompareTo(object obj)
+        {
+            HtmlAttribute att = obj as HtmlAttribute;
+            if (att == null)
+            {
+                throw new ArgumentException("obj");
+            }
+            return Name.CompareTo(att.Name);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Creates a duplicate of this attribute.
+        /// </summary>
+        /// <returns>The cloned attribute.</returns>
+        public HtmlAttribute Clone()
+        {
+            HtmlAttribute att = new HtmlAttribute(_ownerdocument);
+            att.Name = Name;
+            att.Value = Value;
+            return att;
+        }
 
 
         public void Remove()
         {
-            this._ownernode.Attributes.Remove(this);
+            _ownernode.Attributes.Remove(this);
         }
+
+        #endregion
+
+        #region Private Methods
+
+        private string GetRelativeXpath()
+        {
+            if (OwnerNode == null)
+                return Name;
+
+            int i = 1;
+            foreach (HtmlAttribute node in OwnerNode.Attributes)
+            {
+                if (node.Name != Name) continue;
+
+                if (node == this)
+                    break;
+
+                i++;
+            }
+            return "@" + Name + "[" + i + "]";
+        }
+
+        #endregion
     }
+
     public enum AttributeValueQuote
     {
         SingleQuote,
