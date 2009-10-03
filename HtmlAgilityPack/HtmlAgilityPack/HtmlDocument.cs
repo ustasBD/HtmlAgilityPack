@@ -1,6 +1,7 @@
 // HtmlAgilityPack V1.0 - Simon Mourier <simon underscore mourier at hotmail dot com>
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -32,7 +33,7 @@ namespace HtmlAgilityPack
         private ParseState _oldstate;
         private bool _onlyDetectEncoding;
         internal Hashtable _openednodes;
-        private ArrayList _parseerrors = new ArrayList();
+        private List<HtmlParseError> _parseerrors = new List<HtmlParseError>();
         private string _remainder;
         private int _remainderOffset;
         private ParseState _state;
@@ -73,7 +74,8 @@ namespace HtmlAgilityPack
         /// Default is false.
         /// </summary>
         public bool OptionExtractErrorSourceText;
-                    // turning this on can dramatically slow performance if a lot of errors are detected
+
+        // turning this on can dramatically slow performance if a lot of errors are detected
 
         /// <summary>
         /// Defines the maximum length of source text or parse errors. Default is 100.
@@ -198,7 +200,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets a list of parse errors found in the document.
         /// </summary>
-        public ArrayList ParseErrors
+        public IEnumerable<HtmlParseError> ParseErrors
         {
             get { return _parseerrors; }
         }
@@ -762,7 +764,9 @@ namespace HtmlAgilityPack
                     // trigger bom read if needed
                     sr.Peek();
                 }
-                catch
+                    // ReSharper disable EmptyGeneralCatchClause
+                catch (Exception)
+                    // ReSharper restore EmptyGeneralCatchClause
                 {
                     // void on purpose
                 }
@@ -1059,7 +1063,7 @@ namespace HtmlAgilityPack
                         Stack futureChild = new Stack();
                         for (HtmlNode node = _lastparentnode.LastChild; node != null; node = node.PreviousSibling)
                         {
-                            if ((node.Name == _currentnode.Name) && (! node.HasChildNodes))
+                            if ((node.Name == _currentnode.Name) && (!node.HasChildNodes))
                             {
                                 foundNode = node;
                                 break;
@@ -1379,7 +1383,7 @@ namespace HtmlAgilityPack
             _lastnodes = new Hashtable();
             _c = 0;
             _fullcomment = false;
-            _parseerrors = new ArrayList();
+            _parseerrors = new List<HtmlParseError>();
             _line = 1;
             _lineposition = 1;
             _maxlineposition = 1;

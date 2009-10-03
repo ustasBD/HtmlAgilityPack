@@ -4,86 +4,98 @@ using System.Collections;
 
 namespace HtmlAgilityPack
 {
-	internal class NameValuePairList
-	{
-		internal readonly string Text;
-		private ArrayList _allPairs;
-		private Hashtable _pairsWithName;
+    internal class NameValuePairList
+    {
+        #region Fields
 
-		internal NameValuePairList():
-			this(null)
-		{
-		}
+        internal readonly string Text;
+        private ArrayList _allPairs;
+        private Hashtable _pairsWithName;
 
-		internal NameValuePairList(string text)
-		{
-			Text = text;
-			_allPairs = new ArrayList();
-			_pairsWithName = new Hashtable();
+        #endregion
 
-			Parse(text);
-		}
+        #region Constructors
 
-		internal string GetNameValuePairValue(string name)
-		{
-			if (name==null)
-				throw new ArgumentNullException();
-			ArrayList al = GetNameValuePairs(name);
-			if (al==null)
-				return null;
+        internal NameValuePairList() :
+            this(null)
+        {
+        }
 
-			// return first item
-			NameValuePair nvp = al[0] as NameValuePair;
-			return nvp.Value;
-		}
+        internal NameValuePairList(string text)
+        {
+            Text = text;
+            _allPairs = new ArrayList();
+            _pairsWithName = new Hashtable();
 
-		internal ArrayList GetNameValuePairs(string name)
-		{
-			if (name==null)
-				return _allPairs;
-			return _pairsWithName[name] as ArrayList;
-		}
+            Parse(text);
+        }
 
-		private void Parse(string text)
-		{
-			_allPairs.Clear();
-			_pairsWithName.Clear();
-			if (text==null)
-				return;
+        #endregion
 
-			string[] p = text.Split(';');
-			if (p==null)
-				return;
-			foreach(string pv in p)
-			{
-				if (pv.Length==0)
-					continue;
-				string[] onep = pv.Split(new char[]{'='}, 2);
-				if (onep==null)
-					continue;
-				NameValuePair nvp = new NameValuePair(onep[0].Trim().ToLower());
-				if (onep.Length<2)
-					nvp.Value = "";
-				else
-					nvp.Value = onep[1];
+        #region Internal Methods
 
-				_allPairs.Add(nvp);
+        internal static string GetNameValuePairsValue(string text, string name)
+        {
+            NameValuePairList l = new NameValuePairList(text);
+            return l.GetNameValuePairValue(name);
+        }
 
-				// index by name
-				ArrayList al = _pairsWithName[nvp.Name] as ArrayList;
-				if (al==null)
-				{
-					al = new ArrayList();
-					_pairsWithName[nvp.Name] = al;
-				}
-				al.Add(nvp);
-			}
-		}
+        internal ArrayList GetNameValuePairs(string name)
+        {
+            if (name == null)
+                return _allPairs;
+            return _pairsWithName[name] as ArrayList;
+        }
 
-		internal static string GetNameValuePairsValue(string text, string name)
-		{
-			NameValuePairList l = new NameValuePairList(text);
-			return l.GetNameValuePairValue(name);
-		}
-	}
+        internal string GetNameValuePairValue(string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException();
+            ArrayList al = GetNameValuePairs(name);
+            if (al == null)
+                return null;
+
+            // return first item
+            NameValuePair nvp = al[0] as NameValuePair;
+            return nvp != null ? nvp.Value : string.Empty;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void Parse(string text)
+        {
+            _allPairs.Clear();
+            _pairsWithName.Clear();
+            if (text == null)
+                return;
+
+            string[] p = text.Split(';');
+            foreach (string pv in p)
+            {
+                if (pv.Length == 0)
+                    continue;
+                string[] onep = pv.Split(new char[] {'='}, 2);
+                if (onep.Length==0)
+                    continue;
+                NameValuePair nvp = new NameValuePair(onep[0].Trim().ToLower());
+
+                nvp.Value = onep.Length < 2 ? "" : onep[1];
+
+                _allPairs.Add(nvp);
+
+                // index by name
+                ArrayList al = _pairsWithName[nvp.Name] as ArrayList;
+                if (al == null)
+                {
+                    al = new ArrayList();
+                    _pairsWithName[nvp.Name] = al;
+                }
+                al.Add(nvp);
+            }
+        }
+
+        #endregion
+    }
 }

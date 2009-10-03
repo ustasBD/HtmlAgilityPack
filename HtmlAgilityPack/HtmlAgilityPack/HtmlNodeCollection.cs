@@ -10,13 +10,27 @@ namespace HtmlAgilityPack
     /// </summary>
     public class HtmlNodeCollection : IList<HtmlNode>
     {
-        private readonly HtmlNode _parentnode;
-        private readonly List<HtmlNode> items = new List<HtmlNode>();
+        #region Fields
 
+        private readonly HtmlNode _parentnode;
+        private readonly List<HtmlNode> _items = new List<HtmlNode>();
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initialize the HtmlNodeCollection with the base parent node
+        /// </summary>
+        /// <param name="parentnode">The base node of the collection</param>
         public HtmlNodeCollection(HtmlNode parentnode)
         {
             _parentnode = parentnode; // may be null
         }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets a given node from the list.
@@ -46,13 +60,15 @@ namespace HtmlAgilityPack
             get
             {
                 nodeName = nodeName.ToLower();
-                for (int i = 0; i < items.Count; i++)
-                    if (items[i].Equals(nodeName))
-                        return items[i];
+                for (int i = 0; i < _items.Count; i++)
+                    if (_items[i].Equals(nodeName))
+                        return _items[i];
 
                 return null;
             }
-            }
+        }
+
+        #endregion
 
         #region IList<HtmlNode> Members
 
@@ -61,41 +77,175 @@ namespace HtmlAgilityPack
         /// </summary>
         public int Count
         {
-            get { return items.Count; }
-        }
-
-        public void Clear()
-        {
-            foreach (HtmlNode node in items)
-            {
-                node._parentnode = null;
-                node._nextnode = null;
-                node._prevnode = null;
-            }
-            items.Clear();
+            get { return _items.Count; }
         }
 
         /// <summary>
-        /// Remove HtmlNode at index
+        /// Is collection read only
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Gets the node at the specified index.
+        /// </summary>
+        public HtmlNode this[int index]
+        {
+            get { return _items[index]; }
+            set { _items[index] = value; }
+        }
+
+        /// <summary>
+        /// Add node to the collection
+        /// </summary>
+        /// <param name="node"></param>
+        public void Add(HtmlNode node)
+        {
+            _items.Add(node);
+        }
+
+        /// <summary>
+        /// Clears out the collection of HtmlNodes. Removes each nodes reference to parentnode, nextnode and prevnode
+        /// </summary>
+        public void Clear()
+        {
+            foreach (HtmlNode node in _items)
+            {
+                node.ParentNode = null;
+                node.NextSibling = null;
+                node.PreviousSibling = null;
+            }
+            _items.Clear();
+        }
+
+        /// <summary>
+        /// Gets existence of node in collection
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Contains(HtmlNode item)
+        {
+            return _items.Contains(item);
+        }
+
+        /// <summary>
+        /// Copy collection to array
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="arrayIndex"></param>
+        public void CopyTo(HtmlNode[] array, int arrayIndex)
+        {
+            _items.CopyTo(array, arrayIndex);
+        }
+
+        /// <summary>
+        /// Get Enumerator
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<HtmlNode> IEnumerable<HtmlNode>.GetEnumerator()
+        {
+            return _items.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Get Explicit Enumerator
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _items.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Get index of node
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public int IndexOf(HtmlNode item)
+        {
+            return _items.IndexOf(item);
+        }
+
+        /// <summary>
+        /// Insert node at index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="node"></param>
+        public void Insert(int index, HtmlNode node)
+        {
+            HtmlNode next = null;
+            HtmlNode prev = null;
+
+            if (index > 0)
+            {
+                prev = _items[index - 1];
+            }
+
+            if (index < _items.Count)
+            {
+                next = _items[index];
+            }
+
+            _items.Insert(index, node);
+
+            if (prev != null)
+            {
+                if (node == prev)
+                {
+                    throw new InvalidProgramException("Unexpected error.");
+                }
+                prev._nextnode = node;
+            }
+
+            if (next != null)
+            {
+                next._prevnode = node;
+            }
+
+            node._prevnode = prev;
+            if (next == node)
+            {
+                throw new InvalidProgramException("Unexpected error.");
+            }
+            node._nextnode = next;
+            node._parentnode = _parentnode;
+        }
+
+        /// <summary>
+        /// Remove node
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Remove(HtmlNode item)
+        {
+            int i = _items.IndexOf(item);
+            RemoveAt(i);
+            return true;
+        }
+
+        /// <summary>
+        /// Remove <see cref="HtmlNode"/> at index
         /// </summary>
         /// <param name="index"></param>
         public void RemoveAt(int index)
         {
             HtmlNode next = null;
             HtmlNode prev = null;
-            HtmlNode oldnode = items[index];
+            HtmlNode oldnode = _items[index];
 
             if (index > 0)
             {
-                prev = items[index - 1];
+                prev = _items[index - 1];
             }
 
-            if (index < (items.Count - 1))
+            if (index < (_items.Count - 1))
             {
-                next = items[index + 1];
+                next = _items[index + 1];
             }
 
-            items.RemoveAt(index);
+            _items.RemoveAt(index);
 
             if (prev != null)
             {
@@ -116,138 +266,123 @@ namespace HtmlAgilityPack
             oldnode._parentnode = null;
         }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// Insert node at index
+        /// Get first instance of node in supplied collection
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="node"></param>
-        public void Insert(int index, HtmlNode node)
+        /// <param name="items"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static HtmlNode FindFirst(HtmlNodeCollection items, string name)
         {
-            HtmlNode next = null;
-            HtmlNode prev = null;
-
-            if (index > 0)
+            foreach (HtmlNode node in items)
             {
-                prev = items[index - 1];
+                if (node.Name.ToLower().Contains(name))
+                    return node;
+                if (node.HasChildNodes)
+                {
+                    HtmlNode returnNode = FindFirst(node.ChildNodes, name);
+                    if (returnNode != null)
+                        return returnNode;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Add node to the end of the collection
+        /// </summary>
+        /// <param name="node"></param>
+        public void Append(HtmlNode node)
+        {
+            HtmlNode last = null;
+            if (_items.Count > 0)
+            {
+                last = _items[_items.Count - 1];
             }
 
-            if (index < items.Count)
+            _items.Add(node);
+            node._prevnode = last;
+            node._nextnode = null;
+            node._parentnode = _parentnode;
+            if (last != null)
             {
-                next = items[index];
-            }
-
-            items.Insert(index, node);
-
-            if (prev != null)
-            {
-                if (node == prev)
+                if (last == node)
                 {
                     throw new InvalidProgramException("Unexpected error.");
                 }
-                prev._nextnode = node;
+                last._nextnode = node;
             }
-
-            if (next != null)
-            {
-                next._prevnode = node;
-            }
-
-            node._prevnode = prev;
-            if (next == node)
-            {
-                throw new InvalidProgramException("Unexpected error.");
-            }
-            node._nextnode = next;
-            node._parentnode = _parentnode;
         }
 
         /// <summary>
-        /// Add node to the collection
+        /// Get first instance of node with name
         /// </summary>
-        /// <param name="node"></param>
-        public void Add(HtmlNode node)
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public HtmlNode FindFirst(string name)
         {
-            items.Add(node);
-        }
-
-        /// <summary>
-        /// Gets the node at the specified index.
-        /// </summary>
-        public HtmlNode this[int index]
-        {
-            get { return items[index]; }
-            set { items[index] = value; }
+            return FindFirst(this, name);
         }
 
         /// <summary>
         /// Get index of node
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="node"></param>
         /// <returns></returns>
-        public int IndexOf(HtmlNode item)
+        public int GetNodeIndex(HtmlNode node)
         {
-            return items.IndexOf(item);
+            // TODO: should we rewrite this? what would be the key of a node?
+            for (int i = 0; i < _items.Count; i++)
+            {
+                if (node == (_items[i]))
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         /// <summary>
-        /// Gets existence of node in collection
+        /// Add node to the beginning of the collection
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="node"></param>
+        public void Prepend(HtmlNode node)
+        {
+            HtmlNode first = null;
+            if (_items.Count > 0)
+            {
+                first = _items[0];
+            }
+
+            _items.Insert(0, node);
+
+            if (node == first)
+            {
+                throw new InvalidProgramException("Unexpected error.");
+            }
+            node._nextnode = first;
+            node._prevnode = null;
+            node._parentnode = _parentnode;
+            if (first != null)
+            {
+                first._prevnode = node;
+            }
+        }
+
+        /// <summary>
+        /// Remove node at index
+        /// </summary>
+        /// <param name="index"></param>
         /// <returns></returns>
-        public bool Contains(HtmlNode item)
+        public bool Remove(int index)
         {
-            return items.Contains(item);
-        }
-
-        /// <summary>
-        /// Copy collection to array
-        /// </summary>
-        /// <param name="array"></param>
-        /// <param name="arrayIndex"></param>
-        public void CopyTo(HtmlNode[] array, int arrayIndex)
-        {
-            items.CopyTo(array, arrayIndex);
-        }
-
-        /// <summary>
-        /// Is collection readonly
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Remove node
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public bool Remove(HtmlNode item)
-        {
-            int i = items.IndexOf(item);
-            RemoveAt(i);
+            RemoveAt(index);
             return true;
         }
-
-        /// <summary>
-        /// Get Enumerator
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator<HtmlNode> IEnumerable<HtmlNode>.GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Get Explicit Enumerator
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return items.GetEnumerator();
-        }
-
-        #endregion
 
         /// <summary>
         /// Replace node at index
@@ -258,19 +393,19 @@ namespace HtmlAgilityPack
         {
             HtmlNode next = null;
             HtmlNode prev = null;
-            HtmlNode oldnode = items[index];
+            HtmlNode oldnode = _items[index];
 
             if (index > 0)
             {
-                prev = items[index - 1];
+                prev = _items[index - 1];
             }
 
-            if (index < (items.Count - 1))
+            if (index < (_items.Count - 1))
             {
-                next = items[index + 1];
+                next = _items[index + 1];
             }
 
-            items[index] = node;
+            _items[index] = node;
 
             if (prev != null)
             {
@@ -301,119 +436,7 @@ namespace HtmlAgilityPack
             oldnode._parentnode = null;
         }
 
-        /// <summary>
-        /// Add node to the end of the collection
-        /// </summary>
-        /// <param name="node"></param>
-        public void Append(HtmlNode node)
-        {
-            HtmlNode last = null;
-            if (items.Count > 0)
-            {
-                last = items[items.Count - 1];
-            }
-
-            items.Add(node);
-            node._prevnode = last;
-            node._nextnode = null;
-            node._parentnode = _parentnode;
-            if (last != null)
-            {
-                if (last == node)
-                {
-                    throw new InvalidProgramException("Unexpected error.");
-                }
-                last._nextnode = node;
-            }
-        }
-
-        /// <summary>
-        /// Add node to the beginning of the collection
-        /// </summary>
-        /// <param name="node"></param>
-        public void Prepend(HtmlNode node)
-        {
-            HtmlNode first = null;
-            if (items.Count > 0)
-            {
-                first = items[0];
-            }
-
-            items.Insert(0, node);
-
-            if (node == first)
-            {
-                throw new InvalidProgramException("Unexpected error.");
-            }
-            node._nextnode = first;
-            node._prevnode = null;
-            node._parentnode = _parentnode;
-            if (first != null)
-            {
-                first._prevnode = node;
-            }
-        }
-
-        /// <summary>
-        /// Get index of node
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public int GetNodeIndex(HtmlNode node)
-        {
-            // TODO: should we rewrite this? what would be the key of a node?
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (node == (items[i]))
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        /// <summary>
-        /// Remove node at index
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public bool Remove(int index)
-        {
-            RemoveAt(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Get first instance of node with name
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public HtmlNode FindFirst(string name)
-        {
-            return FindFirst(this, name);
-        }
-
-        /// <summary>
-        /// Get first instance of node in supplied collection
-        /// </summary>
-        /// <param name="items"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static HtmlNode FindFirst(HtmlNodeCollection items, string name)
-        {
-            foreach (HtmlNode node in items)
-        {
-                if (node.Name.ToLower().Contains(name))
-                    return node;
-                if (node.HasChildNodes)
-                {
-                    HtmlNode returnNode = FindFirst(node.ChildNodes, name);
-                    if (returnNode != null)
-                        return returnNode;
-                }
-            }
-            return null;
-        }
+        #endregion
 
         #region LINQ Methods
 
@@ -423,43 +446,43 @@ namespace HtmlAgilityPack
         /// <returns></returns>
         public IEnumerable<HtmlNode> DescendantNodes()
         {
-            foreach (HtmlNode item in items)
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.DescendantNodes())
                     yield return n;
-            }
+        }
 
-            /// <summary>
+        /// <summary>
         /// Get all node descended from this collection
-            /// </summary>
+        /// </summary>
         /// <returns></returns>
         public IEnumerable<HtmlNode> Descendants()
-            {
-            foreach (HtmlNode item in items)
+        {
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.Descendants())
                     yield return n;
-            }
+        }
 
-            /// <summary>
+        /// <summary>
         /// Get all node descended from this collection with matching name
-            /// </summary>
+        /// </summary>
         /// <returns></returns>
         public IEnumerable<HtmlNode> Descendants(string name)
-            {
-            foreach (HtmlNode item in items)
+        {
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.Descendants(name))
                     yield return n;
-            }
+        }
 
-            /// <summary>
+        /// <summary>
         /// Gets all first generation elements in collection
-            /// </summary>
+        /// </summary>
         /// <returns></returns>
         public IEnumerable<HtmlNode> Elements()
-                {
-            foreach (HtmlNode item in items)
+        {
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.ChildNodes)
                     yield return n;
-                }
+        }
 
         /// <summary>
         /// Gets all first generation elements matching name
@@ -468,21 +491,21 @@ namespace HtmlAgilityPack
         /// <returns></returns>
         public IEnumerable<HtmlNode> Elements(string name)
         {
-            foreach (HtmlNode item in items)
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.Elements(name))
                     yield return n;
-            }
+        }
 
-            /// <summary>
+        /// <summary>
         /// All first generation nodes in collection
-            /// </summary>
+        /// </summary>
         /// <returns></returns>
         public IEnumerable<HtmlNode> Nodes()
-                {
-            foreach (HtmlNode item in items)
+        {
+            foreach (HtmlNode item in _items)
                 foreach (HtmlNode n in item.ChildNodes)
                     yield return n;
-    }
+        }
 
         #endregion
     }

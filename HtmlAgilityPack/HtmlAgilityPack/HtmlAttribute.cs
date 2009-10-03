@@ -3,6 +3,7 @@
 #region
 
 using System;
+using System.Diagnostics;
 
 #endregion
 
@@ -11,6 +12,7 @@ namespace HtmlAgilityPack
     /// <summary>
     /// Represents an HTML attribute.
     /// </summary>
+    [DebuggerDisplay("Name: {OriginalName}, Value: {Value}")]
     public class HtmlAttribute : IComparable
     {
         #region Fields
@@ -110,6 +112,9 @@ namespace HtmlAgilityPack
             get { return _ownernode; }
         }
 
+        /// <summary>
+        /// Specifies what type of quote the data should be wrapped in
+        /// </summary>
         public AttributeValueQuote QuoteType
         {
             get { return _quoteType; }
@@ -158,6 +163,9 @@ namespace HtmlAgilityPack
             get { return Value; }
         }
 
+        /// <summary>
+        /// Gets a valid XPath string that points to this Attribute
+        /// </summary>
         public string XPath
         {
             get
@@ -202,7 +210,9 @@ namespace HtmlAgilityPack
             return att;
         }
 
-
+        /// <summary>
+        /// Removes this attribute from it's parents collection
+        /// </summary>
         public void Remove()
         {
             _ownernode.Attributes.Remove(this);
@@ -233,9 +243,18 @@ namespace HtmlAgilityPack
         #endregion
     }
 
+    /// <summary>
+    /// An Enum representing different types of Quotes used for surrounding attribute values
+    /// </summary>
     public enum AttributeValueQuote
     {
+        /// <summary>
+        /// A single quote mark '
+        /// </summary>
         SingleQuote,
+        /// <summary>
+        /// A double quote mark "
+        /// </summary>
         DoubleQuote
     }
 }

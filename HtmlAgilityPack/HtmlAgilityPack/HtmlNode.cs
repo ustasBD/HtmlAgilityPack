@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
@@ -11,6 +12,7 @@ namespace HtmlAgilityPack
     /// <summary>
     /// Represents an HTML node.
     /// </summary>
+    [DebuggerDisplay("Name: {OriginalName}}")]
     public class HtmlNode : IXPathNavigable
     {
         #region Fields
@@ -70,6 +72,9 @@ namespace HtmlAgilityPack
 
         #region Constructors
 
+        /// <summary>
+        /// Initialize HtmlNode. Builds a list of all tags that have special allowances
+        /// </summary>
         static HtmlNode()
         {
             // tags whose content may be anything
@@ -110,6 +115,12 @@ namespace HtmlAgilityPack
             ElementsFlags.Add("p", HtmlElementFlag.Empty | HtmlElementFlag.Closed);
         }
 
+        /// <summary>
+        /// Initializes HtmlNode, providing type, owner and where it exists in a collection
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="ownerdocument"></param>
+        /// <param name="index"></param>
         public HtmlNode(HtmlNodeType type, HtmlDocument ownerdocument, int index)
         {
             _nodetype = type;
@@ -148,12 +159,10 @@ namespace HtmlAgilityPack
                 }
             }
 
-            if ((-1 == index) && (type != HtmlNodeType.Comment) && (type != HtmlNodeType.Text))
-            {
-                // innerhtml and outerhtml must be calculated
-                _outerchanged = true;
-                _innerchanged = true;
-            }
+            if ((-1 != index) || (type == HtmlNodeType.Comment) || (type == HtmlNodeType.Text)) return;
+            // innerhtml and outerhtml must be calculated
+            _outerchanged = true;
+            _innerchanged = true;
         }
 
         #endregion
@@ -173,6 +182,7 @@ namespace HtmlAgilityPack
                 }
                 return _attributes;
             }
+            internal set { _attributes = value; }
         }
 
         /// <summary>
@@ -188,6 +198,7 @@ namespace HtmlAgilityPack
                 }
                 return _childnodes;
             }
+            internal set { _childnodes = value; }
         }
 
         /// <summary>
@@ -401,11 +412,7 @@ namespace HtmlAgilityPack
         {
             get
             {
-                if (!HasChildNodes)
-                {
-                    return null;
-                }
-                return _childnodes[_childnodes.Count - 1];
+                return !HasChildNodes ? null : _childnodes[_childnodes.Count - 1];
             }
         }
 
@@ -415,6 +422,7 @@ namespace HtmlAgilityPack
         public int Line
         {
             get { return _line; }
+            internal set { _line = value; }
         }
 
         /// <summary>
@@ -423,6 +431,7 @@ namespace HtmlAgilityPack
         public int LinePosition
         {
             get { return _lineposition; }
+            internal set { _lineposition = value; }
         }
 
         /// <summary>
@@ -436,7 +445,7 @@ namespace HtmlAgilityPack
                 {
                     Name = _ownerdocument._text.Substring(_namestartindex, _namelength);
                 }
-                return _name.ToLower();
+                return _name != null ? _name.ToLower() : string.Empty;
             }
             set { _name = value; }
         }
@@ -447,6 +456,7 @@ namespace HtmlAgilityPack
         public HtmlNode NextSibling
         {
             get { return _nextnode; }
+            internal set { _nextnode = value; }
         }
 
         /// <summary>
@@ -455,8 +465,12 @@ namespace HtmlAgilityPack
         public HtmlNodeType NodeType
         {
             get { return _nodetype; }
+            internal set { _nodetype = value; }
         }
 
+        /// <summary>
+        /// The original unaltered name of the tag
+        /// </summary>
         public string OriginalName
         {
             get { return _name; }
@@ -491,11 +505,12 @@ namespace HtmlAgilityPack
         }
 
         /// <summary>
-        /// Gets the HtmlDocument to which this node belongs.
+        /// Gets the <see cref="HtmlDocument"/> to which this node belongs.
         /// </summary>
         public HtmlDocument OwnerDocument
         {
             get { return _ownerdocument; }
+            internal set { _ownerdocument = value; }
         }
 
         /// <summary>
@@ -504,6 +519,7 @@ namespace HtmlAgilityPack
         public HtmlNode ParentNode
         {
             get { return _parentnode; }
+            internal set { _parentnode = value; }
         }
 
         /// <summary>
@@ -512,6 +528,7 @@ namespace HtmlAgilityPack
         public HtmlNode PreviousSibling
         {
             get { return _prevnode; }
+            internal set { _prevnode = value; }
         }
 
         /// <summary>
@@ -522,7 +539,19 @@ namespace HtmlAgilityPack
             get { return _streamposition; }
         }
 
-        
+        /// <summary>
+        /// Gets a valid XPath string that points to this node
+        /// </summary>
+        public string XPath
+        {
+            get
+            {
+                string basePath = (ParentNode == null || ParentNode.NodeType == HtmlNodeType.Document)
+                                      ? "/"
+                                      : ParentNode.XPath + "/";
+                return basePath + GetRelativeXpath();
+            }
+        }
 
         #endregion
 
@@ -544,8 +573,8 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Determines if an element node can be kept overlapped.
         /// </summary>
-        /// <param name="name">The name of the element node to check. May not be null.</param>
-        /// <returns>true if the name is the name of an element node that can be kept overlapped, false otherwise.</returns>
+        /// <param name="name">The name of the element node to check. May not be <c>null</c>.</param>
+        /// <returns>true if the name is the name of an element node that can be kept overlapped, <c>false</c> otherwise.</returns>
         public static bool CanOverlapElement(string name)
         {
             if (name == null)
@@ -779,7 +808,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Creates a duplicate of the node and changes its name at the same time.
         /// </summary>
-        /// <param name="newName">The new name of the cloned node. May not be null.</param>
+        /// <param name="newName">The new name of the cloned node. May not be <c>null</c>.</param>
         /// <returns>The cloned node.</returns>
         public HtmlNode CloneNode(string newName)
         {
@@ -867,7 +896,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Creates a duplicate of the node and the subtree under it.
         /// </summary>
-        /// <param name="node">The node to duplicate. May not be null.</param>
+        /// <param name="node">The node to duplicate. May not be <c>null</c>.</param>
         public void CopyFrom(HtmlNode node)
         {
             CopyFrom(node, true);
@@ -876,7 +905,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Creates a duplicate of the node.
         /// </summary>
-        /// <param name="node">The node to duplicate. May not be null.</param>
+        /// <param name="node">The node to duplicate. May not be <c>null</c>.</param>
         /// <param name="deep">true to recursively clone the subtree under the specified node, false to clone only the node itself.</param>
         public void CopyFrom(HtmlNode node, bool deep)
         {
@@ -905,6 +934,15 @@ namespace HtmlAgilityPack
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates an XPathNavigator using the root of this document.
+        /// </summary>
+        /// <returns></returns>
+        public XPathNavigator CreateRootNavigator()
+        {
+            return new HtmlNodeNavigator(_ownerdocument, _ownerdocument.DocumentNode);
         }
 
         /// <summary>
@@ -1010,7 +1048,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Helper method to get the value of an attribute of this node. If the attribute is not found, the default value will be returned.
         /// </summary>
-        /// <param name="name">The name of the attribute to get. May not be null.</param>
+        /// <param name="name">The name of the attribute to get. May not be <c>null</c>.</param>
         /// <param name="def">The default value to return if not found.</param>
         /// <returns>The value of the attribute if found, the default value if not found.</returns>
         public string GetAttributeValue(string name, string def)
@@ -1035,7 +1073,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Helper method to get the value of an attribute of this node. If the attribute is not found, the default value will be returned.
         /// </summary>
-        /// <param name="name">The name of the attribute to get. May not be null.</param>
+        /// <param name="name">The name of the attribute to get. May not be <c>null</c>.</param>
         /// <param name="def">The default value to return if not found.</param>
         /// <returns>The value of the attribute if found, the default value if not found.</returns>
         public int GetAttributeValue(string name, int def)
@@ -1067,7 +1105,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Helper method to get the value of an attribute of this node. If the attribute is not found, the default value will be returned.
         /// </summary>
-        /// <param name="name">The name of the attribute to get. May not be null.</param>
+        /// <param name="name">The name of the attribute to get. May not be <c>null</c>.</param>
         /// <param name="def">The default value to return if not found.</param>
         /// <returns>The value of the attribute if found, the default value if not found.</returns>
         public bool GetAttributeValue(string name, bool def)
@@ -1099,7 +1137,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Inserts the specified node immediately after the specified reference node.
         /// </summary>
-        /// <param name="newChild">The node to insert. May not be null.</param>
+        /// <param name="newChild">The node to insert. May not be <c>null</c>.</param>
         /// <param name="refChild">The node that is the reference node. The newNode is placed after the refNode.</param>
         /// <returns>The node being inserted.</returns>
         public HtmlNode InsertAfter(HtmlNode newChild, HtmlNode refChild)
@@ -1130,7 +1168,7 @@ namespace HtmlAgilityPack
                 throw new ArgumentException(HtmlDocument.HtmlExceptionRefNotChild);
             }
 
-            _childnodes.Insert(index + 1, newChild);
+            if (_childnodes != null) _childnodes.Insert(index + 1, newChild);
 
             _ownerdocument.SetIdForNode(newChild, newChild.GetId());
             _outerchanged = true;
@@ -1141,7 +1179,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Inserts the specified node immediately before the specified reference node.
         /// </summary>
-        /// <param name="newChild">The node to insert. May not be null.</param>
+        /// <param name="newChild">The node to insert. May not be <c>null</c>.</param>
         /// <param name="refChild">The node that is the reference node. The newChild is placed before this node.</param>
         /// <returns>The node being inserted.</returns>
         public HtmlNode InsertBefore(HtmlNode newChild, HtmlNode refChild)
@@ -1173,7 +1211,7 @@ namespace HtmlAgilityPack
                 throw new ArgumentException(HtmlDocument.HtmlExceptionRefNotChild);
             }
 
-            _childnodes.Insert(index, newChild);
+            if (_childnodes != null) _childnodes.Insert(index, newChild);
 
             _ownerdocument.SetIdForNode(newChild, newChild.GetId());
             _outerchanged = true;
@@ -1184,7 +1222,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Adds the specified node to the beginning of the list of children of this node.
         /// </summary>
-        /// <param name="newChild">The node to add. May not be null.</param>
+        /// <param name="newChild">The node to add. May not be <c>null</c>.</param>
         /// <returns>The node added.</returns>
         public HtmlNode PrependChild(HtmlNode newChild)
         {
@@ -1202,7 +1240,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Adds the specified node list to the beginning of the list of children of this node.
         /// </summary>
-        /// <param name="newChildren">The node list to add. May not be null.</param>
+        /// <param name="newChildren">The node list to add. May not be <c>null</c>.</param>
         public void PrependChildren(HtmlNodeCollection newChildren)
         {
             if (newChildren == null)
@@ -1274,7 +1312,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Removes the specified child node.
         /// </summary>
-        /// <param name="oldChild">The node being removed. May not be null.</param>
+        /// <param name="oldChild">The node being removed. May not be <c>null</c>.</param>
         /// <returns>The node removed.</returns>
         public HtmlNode RemoveChild(HtmlNode oldChild)
         {
@@ -1295,7 +1333,8 @@ namespace HtmlAgilityPack
                 throw new ArgumentException(HtmlDocument.HtmlExceptionRefNotChild);
             }
 
-            _childnodes.Remove(index);
+            if (_childnodes != null)
+                _childnodes.Remove(index);
 
             _ownerdocument.SetIdForNode(null, oldChild.GetId());
             _outerchanged = true;
@@ -1306,7 +1345,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Removes the specified child node.
         /// </summary>
-        /// <param name="oldChild">The node being removed. May not be null.</param>
+        /// <param name="oldChild">The node being removed. May not be <c>null</c>.</param>
         /// <param name="keepGrandChildren">true to keep grand children of the node, false otherwise.</param>
         /// <returns>The node removed.</returns>
         public HtmlNode RemoveChild(HtmlNode oldChild, bool keepGrandChildren)
@@ -1363,7 +1402,7 @@ namespace HtmlAgilityPack
                 throw new ArgumentException(HtmlDocument.HtmlExceptionRefNotChild);
             }
 
-            _childnodes.Replace(index, newChild);
+            if (_childnodes != null) _childnodes.Replace(index, newChild);
 
             _ownerdocument.SetIdForNode(null, oldChild.GetId());
             _ownerdocument.SetIdForNode(newChild, newChild.GetId());
@@ -1373,10 +1412,10 @@ namespace HtmlAgilityPack
         }
 
         /// <summary>
-        /// Selects a list of nodes matching the XPath expression.
+        /// Selects a list of nodes matching the <see cref="XPath"/> expression.
         /// </summary>
         /// <param name="xpath">The XPath expression.</param>
-        /// <returns>An HtmlNodeCollection containing a collection of nodes matching the XPath query, or null if no node matched the XPath expression.</returns>
+        /// <returns>An <see cref="HtmlNodeCollection"/> containing a collection of nodes matching the <see cref="XPath"/> query, or <c>null</c> if no node matched the XPath expression.</returns>
         public HtmlNodeCollection SelectNodes(string xpath)
         {
             HtmlNodeCollection list = new HtmlNodeCollection(null);
@@ -1399,7 +1438,7 @@ namespace HtmlAgilityPack
         /// Selects the first XmlNode that matches the XPath expression.
         /// </summary>
         /// <param name="xpath">The XPath expression. May not be null.</param>
-        /// <returns>The first HtmlNode that matches the XPath query or a null reference if no matching node was found.</returns>
+        /// <returns>The first <see cref="HtmlNode"/> that matches the XPath query or a null reference if no matching node was found.</returns>
         public HtmlNode SelectSingleNode(string xpath)
         {
             if (xpath == null)
@@ -1651,7 +1690,6 @@ namespace HtmlAgilityPack
         /// <param name="writer">The XmlWriter to which you want to save.</param>
         public void WriteTo(XmlWriter writer)
         {
-            string html;
             switch (_nodetype)
             {
                 case HtmlNodeType.Comment:
@@ -1672,20 +1710,12 @@ namespace HtmlAgilityPack
                     break;
 
                 case HtmlNodeType.Text:
-                    html = ((HtmlTextNode) this).Text;
+                    string html = ((HtmlTextNode) this).Text;
                     writer.WriteString(html);
                     break;
 
                 case HtmlNodeType.Element:
-                    string name;
-                    if (_ownerdocument.OptionOutputUpperCase)
-                    {
-                        name = Name.ToUpper();
-                    }
-                    else
-                    {
-                        name = Name;
-                    }
+                    string name = _ownerdocument.OptionOutputUpperCase ? Name.ToUpper() : Name;
 
                     if (_ownerdocument.OptionOutputOriginalCase)
                         name = OriginalName;
@@ -1711,37 +1741,14 @@ namespace HtmlAgilityPack
         /// <returns>The saved string.</returns>
         public string WriteTo()
         {
-            StringWriter sw = new StringWriter();
-            WriteTo(sw);
-            sw.Flush();
-            return sw.ToString();
-        }
-
-        private string GetRelativeXpath()
-        {
-            if(ParentNode==null)
-                return Name;
-
-            int i = 1;
-            foreach(HtmlNode node in ParentNode.ChildNodes)
+            using (StringWriter sw = new StringWriter())
             {
-                if (node.Name != Name) continue;
-
-                if(node == this)
-                    break;
-
-                i++;
-            }
-            return Name + "[" + i + "]";
-        }
-        public string XPath
-        {
-            get
-            {
-                string basePath = (ParentNode == null) ? "/" : ParentNode.XPath + "/";
-                return basePath + GetRelativeXpath();
+                WriteTo(sw);
+                sw.Flush();
+                return sw.ToString();
             }
         }
+
         #endregion
 
         #region Internal Methods
@@ -1758,8 +1765,8 @@ namespace HtmlAgilityPack
             {
                 return;
             }
-            // we use _hashitems to make sure attributes are written only once
-            foreach (HtmlAttribute att in node.Attributes._hashitems.Values)
+            // we use Hashitems to make sure attributes are written only once
+            foreach (HtmlAttribute att in node.Attributes.Hashitems.Values)
             {
                 writer.WriteAttributeString(att.XmlName, att.Value);
             }
@@ -1900,8 +1907,8 @@ namespace HtmlAgilityPack
                 {
                     return;
                 }
-                // we use _hashitems to make sure attributes are written only once
-                foreach (HtmlAttribute att in _attributes._hashitems.Values)
+                // we use Hashitems to make sure attributes are written only once
+                foreach (HtmlAttribute att in _attributes.Hashitems.Values)
                 {
                     WriteAttribute(outText, att);
                 }
@@ -1958,6 +1965,30 @@ namespace HtmlAgilityPack
                     WriteAttribute(outText, _ownerdocument.CreateAttribute("_children", ChildNodes.Count.ToString()));
                 }
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private string GetRelativeXpath()
+        {
+            if (ParentNode == null)
+                return Name;
+            if (NodeType == HtmlNodeType.Document)
+                return string.Empty;
+
+            int i = 1;
+            foreach (HtmlNode node in ParentNode.ChildNodes)
+            {
+                if (node.Name != Name) continue;
+
+                if (node == this)
+                    break;
+
+                i++;
+            }
+            return Name + "[" + i + "]";
         }
 
         #endregion
