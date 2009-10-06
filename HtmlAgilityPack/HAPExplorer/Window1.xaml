@@ -20,12 +20,30 @@
                 <MenuItem Name="mnuExit" Header="Exit" InputGestureText="Alt+F4" Click="mnuExit_Click" />
             </MenuItem>
         </Menu>
-        <TreeView Name="hapTree" Margin="0,0,0,0" SelectedItemChanged="hapTree_SelectedItemChanged" FontStyle="Normal" HorizontalAlignment="Stretch" Grid.Row="1" />
         <TextBox Margin="0,20,0,39" Name="txtHtml" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" AcceptsReturn="True" TextWrapping="Wrap" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" />
-        <Button Margin="273,0,266,10" Name="btnParse" Height="23" VerticalAlignment="Bottom" Click="btnParse_Click" HorizontalAlignment="Stretch" Grid.ColumnSpan="2">Parse</Button>
-        <hap:HtmlNodeViewer x:Name="HtmlNodeViewer1" Margin="0,0,0,0" Visibility="Hidden" Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1" />
-        <hap:HtmlAttributeViewer x:Name="HtmlAttributeViewer1" Margin="0,0,0,0" Visibility="Hidden" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1" />
-        <GridSplitter Margin="0,0,0,0" Name="gridSplitter1" Width="12" Cursor="SizeWE" ResizeDirection="Columns" Grid.Row="1" />
-        <Button Grid.Column="1" Height="23" Margin="168,0,114,6" Name="btnTestCode" VerticalAlignment="Bottom" Click="btnTestCode_Click">Test Code</Button>
+        <Button Margin="12,0,170,10" Name="btnParse" Height="23" VerticalAlignment="Bottom" Click="btnParse_Click">Parse</Button>
+        <Button Grid.Column="1" Height="23" Margin="0,0,12,10" Name="btnTestCode" VerticalAlignment="Bottom" Click="btnTestCode_Click" HorizontalAlignment="Right" Width="75">Test Code</Button>
+        <Label Margin="210,195,0,0" HorizontalAlignment="Left" Width="74" Height="28" VerticalAlignment="Top">Search Tags</Label>
+        <TextBox Grid.ColumnSpan="2" Margin="283,196,0,0" Name="txtSearchTag" Height="23" VerticalAlignment="Top" HorizontalAlignment="Left" Width="119" />
+        <Button Height="23" Margin="42,196,0,0" Name="btnSearch" VerticalAlignment="Top" Grid.Column="1" HorizontalAlignment="Left" Width="75" Click="btnSearch_Click">Find All</Button>
+        <Button Height="23" Margin="123,196,0,0" Name="button1" VerticalAlignment="Top" Grid.Column="1" HorizontalAlignment="Left" Width="110" Click="button1_Click">Find From Current</Button>
+        <TabControl Margin="0,0,0,0" Name="tabControl1" Grid.Row="1" Grid.ColumnSpan="2">
+            <TabItem Header="Node Tree" Name="tabNodeTree">
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="366*" />
+                        <ColumnDefinition Width="357*" />
+                    </Grid.ColumnDefinitions>
+                    <hap:HtmlNodeViewer x:Name="HtmlNodeViewer1" Margin="0,0,0,0" Visibility="Hidden" Grid.Row="0" HorizontalAlignment="Stretch" Grid.Column="1" />
+                    <hap:HtmlAttributeViewer x:Name="HtmlAttributeViewer1" Margin="0,0,0,0" Visibility="Hidden" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="0" />
+                    <GridSplitter Margin="0,0,0,0" Name="gridSplitter1" Width="12" Cursor="SizeWE" ResizeDirection="Columns" Grid.Row="0" />
+                    <hap:NodeTreeView x:Name="hapTree" Margin="0,0,0,0" SelectedItemChanged="hapTree_SelectedItemChanged" FontStyle="Normal" HorizontalAlignment="Stretch" Grid.Row="0" />
+
+                </Grid>
+            </TabItem>
+            <TabItem Name="tabSearchResults" Header="Search Results" >
+                <ListBox Name="listResults"></ListBox>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

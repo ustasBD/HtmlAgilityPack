@@ -1825,7 +1825,7 @@ namespace HtmlAgilityPack
             HtmlAttribute att = Attributes["id"];
             if (att == null)
             {
-                return null;
+                return string.Empty;
             }
             return att.Value;
         }

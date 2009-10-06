@@ -3,12 +3,12 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using HtmlAgilityPack;
-using System.Net;
 using System.Windows.Input;
+using HtmlAgilityPack;
+using Microsoft.Win32;
 
 #endregion
 
@@ -21,7 +21,7 @@ namespace HAPExplorer
     {
         #region Fields
 
-        private Microsoft.Win32.OpenFileDialog _fileDialog = new Microsoft.Win32.OpenFileDialog();
+        private OpenFileDialog _fileDialog = new OpenFileDialog();
         private HtmlDocument _html = new HtmlDocument();
 
         #endregion
@@ -35,15 +35,6 @@ namespace HAPExplorer
             InitializeFileDialog();
         }
 
-
-        private void InitializeFileDialog()
-        {
-            _fileDialog.FileName = "Document"; // Default file name
-            _fileDialog.DefaultExt = ".html"; // Default file extension
-            _fileDialog.Filter = "Text documents (.html,.htm,.aspx)|*.html;*.htm;*.aspx"; // Filter files by extension
-
-        }
-
         #endregion
 
         #region Private Methods
@@ -55,25 +46,65 @@ namespace HAPExplorer
             _html = new HtmlDocument();
             _html.LoadHtml(txtHtml.Text);
 
-            PopulateTreeview();
+            hapTree.BaseNode = _html.DocumentNode;
         }
 
-        private TreeViewItem BuildTree(HtmlNode htmlNode)
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
         {
-            //Create the main treeview node for this htmlnode
-            var item = new TreeViewItem { DataContext = htmlNode }; //preserve reference to _html node for databinding
-
-            //if we have psuedo element, show it's text
-            if (htmlNode.NodeType == HtmlNodeType.Text || htmlNode.NodeType == HtmlNodeType.Comment)
-                item.Header = string.Format("<{0}> = {1}", htmlNode.OriginalName, htmlNode.InnerText.Trim());
-            else
-                item.Header = string.Format("<{0}>", htmlNode.OriginalName);
-
-            //Create Attribute collection
-            PopulateItem(htmlNode, item);
-
-            return item;
+            SearchFromNode(_html.DocumentNode);
         }
+
+        private void btnTestCode_Click(object sender, RoutedEventArgs e)
+        {
+            var mainPage = GetHtml("http://htmlagilitypack.codeplex.com");
+            var homepage = new HtmlDocument();
+            homepage.LoadHtml(mainPage);
+
+            var nodes =
+                homepage.DocumentNode.Descendants("a").Where(x => x.Id.ToLower().Contains("releasestab")).FirstOrDefault
+                    ();
+            var link = nodes.Attributes["href"].Value;
+
+            var dc = new HtmlDocument();
+            try
+            {
+                Cursor = Cursors.Wait;
+                var req = (HttpWebRequest) WebRequest.Create(link);
+                using (var resp = req.GetResponse().GetResponseStream())
+                using (var read = new StreamReader(resp))
+                {
+                    dc.LoadHtml(read.ReadToEnd());
+                    var span =
+                        dc.DocumentNode.Descendants("span").Where(
+                            x => x.Id.ToLower().Contains("releasedownloadsliteral")).FirstOrDefault();
+                    MessageBox.Show(
+                        int.Parse(span.InnerHtml.ToLower().Replace("downloads", string.Empty).Trim()).ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error,
+                                MessageBoxResult.OK);
+            }
+        }
+
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+            if (hapTree.SelectedItem != null && hapTree.SelectedItem is TreeViewItem &&
+                ((TreeViewItem) hapTree.SelectedItem).DataContext is HtmlNode)
+                SearchFromNode(((TreeViewItem) hapTree.SelectedItem).DataContext as HtmlNode);
+        }
+
+        private string GetHtml(string link)
+        {
+            var req = (HttpWebRequest) WebRequest.Create(link);
+            using (var resp = req.GetResponse().GetResponseStream())
+            using (var read = new StreamReader(resp))
+            {
+                return read.ReadToEnd();
+            }
+        }
+
 
         private void hapTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
@@ -99,45 +130,12 @@ namespace HAPExplorer
             }
         }
 
-        private void PopulateItem(HtmlNode htmlNode, ItemsControl item)
+        private void InitializeFileDialog()
         {
-            var attributes = new TreeViewItem { Header = "Attributes" };
-            foreach (var att in htmlNode.Attributes)
-                attributes.Items.Add(new TreeViewItem
-                                         {
-                                             Header = string.Format("{0} = {1}", att.OriginalName, att.Value),
-                                             DataContext = att
-                                         });
-            //If we don't have any attributes, don't add the node
-            if (attributes.Items.Count > 0)
-                item.Items.Add(attributes);
-
-            //Create the Elements Collection
-            var elements = new TreeViewItem { Header = "Elements", DataContext = htmlNode };
-            foreach (var node in htmlNode.ChildNodes)
-            {
-                //If there are no attributes, no need to add a node inbetween the parent in the treeview
-                if (attributes.Items.Count > 0)
-                    elements.Items.Add(BuildTree(node));
-                else
-                    item.Items.Add(BuildTree(node));
-            }
-
-            //If there are no nodes in the elements collection, don't add to the parent 
-            if (elements.Items.Count > 0)
-                item.Items.Add(elements);
+            _fileDialog.FileName = "Document"; // Default file name
+            _fileDialog.DefaultExt = ".html"; // Default file extension
+            _fileDialog.Filter = "Text documents (.html,.htm,.aspx)|*.html;*.htm;*.aspx"; // Filter files by extension
         }
-
-        private void PopulateTreeview()
-        {
-            hapTree.Items.Clear();
-            //We create the base node here, that way as new nodes are added we can animate them ;)
-            var document = new TreeViewItem { Header = "DocumentElement", DataContext = _html.DocumentNode, };
-            hapTree.Items.Add(document);
-            PopulateItem(_html.DocumentNode, document);
-        }
-
-        #endregion
 
         private void mnuExit_Click(object sender, RoutedEventArgs e)
         {
@@ -156,21 +154,23 @@ namespace HAPExplorer
             }
             catch (FileNotFoundException fEx)
             {
-                MessageBox.Show("Error loading file: " + fEx.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                MessageBox.Show("Error loading file: " + fEx.Message, "Error", MessageBoxButton.OK,
+                                MessageBoxImage.Error, MessageBoxResult.OK);
             }
             catch (FileLoadException fEx)
             {
-                MessageBox.Show("Error loading file: " + fEx.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                MessageBox.Show("Error loading file: " + fEx.Message, "Error", MessageBoxButton.OK,
+                                MessageBoxImage.Error, MessageBoxResult.OK);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error,
+                                MessageBoxResult.OK);
             }
             finally
             {
                 Cursor = Cursors.Arrow;
             }
-
         }
 
         private void mnuOpenUrl_Click(object sender, RoutedEventArgs e)
@@ -180,7 +180,7 @@ namespace HAPExplorer
             try
             {
                 Cursor = Cursors.Wait;
-                var req = (HttpWebRequest)HttpWebRequest.Create(dialog.Url);
+                var req = (HttpWebRequest) WebRequest.Create(dialog.Url);
                 using (var resp = req.GetResponse().GetResponseStream())
                 using (var read = new StreamReader(resp))
                 {
@@ -190,7 +190,8 @@ namespace HAPExplorer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error,
+                                MessageBoxResult.OK);
             }
             finally
             {
@@ -198,10 +199,28 @@ namespace HAPExplorer
             }
         }
 
-        private void btnTestCode_Click(object sender, RoutedEventArgs e)
+        private void SearchFromNode(HtmlNode baseNode)
         {
-            var nodes = _html.DocumentNode.Descendants("input").Count();
-
+            var nodes = baseNode.Descendants(txtSearchTag.Text);
+            foreach (var node in nodes)
+            {
+                var tr = new NodeTreeView {BaseNode = node};
+                var lvi = new ListBoxItem();
+                var pnl = new StackPanel();
+                pnl.Children.Add(new Label
+                                     {
+                                         Content =
+                                             string.Format("id:{0} name:{1} children{2}", node.Id, node.Name,
+                                                           node.ChildNodes.Count),
+                                         FontWeight = FontWeights.Bold
+                                     });
+                pnl.Children.Add(tr);
+                lvi.Content = pnl;
+                listResults.Items.Add(lvi);
+            }
+            tabControl1.SelectedItem = tabSearchResults;
         }
+
+        #endregion
     }
 }
