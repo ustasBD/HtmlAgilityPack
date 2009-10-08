@@ -69,7 +69,6 @@
     <Compile Include="MixedCodeDocumentFragmentList.cs" />
     <Compile Include="MixedCodeDocumentFragmentType.cs" />
     <Compile Include="MixedCodeDocumentTextFragment.cs" />
-    <Compile Include="NameValuePair.cs" />
     <Compile Include="crc32.cs" />
     <Compile Include="NameValuePairList.cs" />
     <Compile Include="HtmlAttribute.cs" />

@@ -1,6 +1,7 @@
 // HtmlAgilityPack V1.0 - Simon Mourier <simon underscore mourier at hotmail dot com>
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security;
 
 #if DEBUG
 
@@ -26,6 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.3.9.1")]
 [assembly: AssemblyFileVersion("1.3.9.1")]
 [assembly: AssemblyInformationalVersion("1.3.9.1")]
+[assembly: AllowPartiallyTrustedCallers]
 [assembly: AssemblyDelaySign(false)]
 
 // 
