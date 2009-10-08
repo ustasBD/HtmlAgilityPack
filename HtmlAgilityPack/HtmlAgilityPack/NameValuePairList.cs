@@ -1,6 +1,7 @@
 // HtmlAgilityPack V1.0 - Simon Mourier <simon underscore mourier at hotmail dot com>
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace HtmlAgilityPack
 {
@@ -9,8 +10,8 @@ namespace HtmlAgilityPack
         #region Fields
 
         internal readonly string Text;
-        private ArrayList _allPairs;
-        private Hashtable _pairsWithName;
+        private List<KeyValuePair<string, string>> _allPairs;
+        private Dictionary<string,List<KeyValuePair<string,string>>> _pairsWithName;
 
         #endregion
 
@@ -24,8 +25,8 @@ namespace HtmlAgilityPack
         internal NameValuePairList(string text)
         {
             Text = text;
-            _allPairs = new ArrayList();
-            _pairsWithName = new Hashtable();
+            _allPairs = new List<KeyValuePair<string, string>>();
+            _pairsWithName = new Dictionary<string, List<KeyValuePair<string, string>>>();
 
             Parse(text);
         }
@@ -40,24 +41,23 @@ namespace HtmlAgilityPack
             return l.GetNameValuePairValue(name);
         }
 
-        internal ArrayList GetNameValuePairs(string name)
+        internal List<KeyValuePair<string,string>> GetNameValuePairs(string name)
         {
             if (name == null)
                 return _allPairs;
-            return _pairsWithName[name] as ArrayList;
+            return _pairsWithName.ContainsKey(name) ? _pairsWithName[name] : new List<KeyValuePair<string,string>>();
         }
 
         internal string GetNameValuePairValue(string name)
         {
             if (name == null)
                 throw new ArgumentNullException();
-            ArrayList al = GetNameValuePairs(name);
-            if (al == null)
-                return null;
+            List<KeyValuePair<string,string>> al = GetNameValuePairs(name);
+            if (al.Count==0)
+                return string.Empty;
 
             // return first item
-            NameValuePair nvp = al[0] as NameValuePair;
-            return nvp != null ? nvp.Value : string.Empty;
+             return al[0].Value.Trim();
         }
 
         #endregion
@@ -76,22 +76,24 @@ namespace HtmlAgilityPack
             {
                 if (pv.Length == 0)
                     continue;
-                string[] onep = pv.Split(new char[] {'='}, 2);
+                string[] onep = pv.Split(new[] {'='}, 2);
                 if (onep.Length==0)
                     continue;
-                NameValuePair nvp = new NameValuePair(onep[0].Trim().ToLower());
-
-                nvp.Value = onep.Length < 2 ? "" : onep[1];
+                KeyValuePair<string, string> nvp = new KeyValuePair<string, string>(onep[0].Trim().ToLower(),
+                                                                                    onep.Length < 2 ? "" : onep[1]);
 
                 _allPairs.Add(nvp);
 
                 // index by name
-                ArrayList al = _pairsWithName[nvp.Name] as ArrayList;
-                if (al == null)
+                List<KeyValuePair<string, string>> al;
+                if (!_pairsWithName.ContainsKey(nvp.Key))
                 {
-                    al = new ArrayList();
-                    _pairsWithName[nvp.Name] = al;
+                    al = new List<KeyValuePair<string, string>>();
+                    _pairsWithName[nvp.Key] = al;
                 }
+                else
+                    al = _pairsWithName[nvp.Key];
+
                 al.Add(nvp);
             }
         }

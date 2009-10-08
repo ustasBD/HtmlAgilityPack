@@ -167,7 +167,7 @@ namespace HtmlAgilityPack
                 }
                 else
                 {
-                    return (int) _crc32.CheckSum;
+                    return (int)_crc32.CheckSum;
                 }
             }
         }
@@ -271,7 +271,7 @@ namespace HtmlAgilityPack
                 else
                 {
                     nameisok = false;
-                    byte[] bytes = Encoding.UTF8.GetBytes(new char[] {name[i]});
+                    byte[] bytes = Encoding.UTF8.GetBytes(new char[] { name[i] });
                     for (int j = 0; j < bytes.Length; j++)
                     {
                         xmlname += bytes[j].ToString("x2");
@@ -355,7 +355,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML comment node.</returns>
         public HtmlCommentNode CreateComment()
         {
-            return (HtmlCommentNode) CreateNode(HtmlNodeType.Comment);
+            return (HtmlCommentNode)CreateNode(HtmlNodeType.Comment);
         }
 
         /// <summary>
@@ -396,7 +396,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML text node.</returns>
         public HtmlTextNode CreateTextNode()
         {
-            return (HtmlTextNode) CreateNode(HtmlNodeType.Text);
+            return (HtmlTextNode)CreateNode(HtmlNodeType.Text);
         }
 
         /// <summary>
@@ -764,9 +764,9 @@ namespace HtmlAgilityPack
                     // trigger bom read if needed
                     sr.Peek();
                 }
-                    // ReSharper disable EmptyGeneralCatchClause
+                // ReSharper disable EmptyGeneralCatchClause
                 catch (Exception)
-                    // ReSharper restore EmptyGeneralCatchClause
+                // ReSharper restore EmptyGeneralCatchClause
                 {
                     // void on purpose
                 }
@@ -897,7 +897,7 @@ namespace HtmlAgilityPack
         /// <param name="writer">The StreamWriter to which you want to save.</param>
         public void Save(StreamWriter writer)
         {
-            Save((TextWriter) writer);
+            Save((TextWriter)writer);
         }
 
         /// <summary>
@@ -1048,7 +1048,7 @@ namespace HtmlAgilityPack
             bool error = false;
 
             // find last node of this kind
-            HtmlNode prev = (HtmlNode) _lastnodes[_currentnode.Name];
+            HtmlNode prev = (HtmlNode)_lastnodes[_currentnode.Name];
             if (prev == null)
             {
                 if (HtmlNode.IsClosedElement(_currentnode.Name))
@@ -1075,7 +1075,7 @@ namespace HtmlAgilityPack
                             HtmlNode node = null;
                             while (futureChild.Count != 0)
                             {
-                                node = (HtmlNode) futureChild.Pop();
+                                node = (HtmlNode)futureChild.Pop();
                                 _lastparentnode.RemoveChild(node);
                                 foundNode.AppendChild(node);
                             }
@@ -1096,7 +1096,7 @@ namespace HtmlAgilityPack
                         // this is a hack: add it as a text node
                         HtmlNode closenode = CreateNode(HtmlNodeType.Text, _currentnode._outerstartindex);
                         closenode._outerlength = _currentnode._outerlength;
-                        ((HtmlTextNode) closenode).Text = ((HtmlTextNode) closenode).Text.ToLower();
+                        ((HtmlTextNode)closenode).Text = ((HtmlTextNode)closenode).Text.ToLower();
                         if (_lastparentnode != null)
                         {
                             _lastparentnode.AppendChild(closenode);
@@ -1202,7 +1202,7 @@ namespace HtmlAgilityPack
 
         private HtmlNode FindResetterNode(HtmlNode node, string name)
         {
-            HtmlNode resetter = (HtmlNode) _lastnodes[name];
+            HtmlNode resetter = (HtmlNode)_lastnodes[name];
             if (resetter == null)
                 return null;
             if (resetter.Closed)
@@ -1240,7 +1240,7 @@ namespace HtmlAgilityPack
             HtmlNode prev;
 
             // if we find a previous unclosed same name node, without a resetter node between, we must close it
-            prev = (HtmlNode) _lastnodes[name];
+            prev = (HtmlNode)_lastnodes[name];
             if ((prev != null) && (!prev.Closed))
             {
                 // try to find a resetter node, if found, we do nothing
@@ -1272,14 +1272,14 @@ namespace HtmlAgilityPack
             switch (name)
             {
                 case "li":
-                    return new string[] {"ul"};
+                    return new string[] { "ul" };
 
                 case "tr":
-                    return new string[] {"table"};
+                    return new string[] { "table" };
 
                 case "th":
                 case "td":
-                    return new string[] {"tr", "table"};
+                    return new string[] { "tr", "table" };
 
                 default:
                     return null;
@@ -1819,7 +1819,7 @@ namespace HtmlAgilityPack
                     ReadDocumentEncoding(_currentnode);
 
                     // remember last node of this kind
-                    HtmlNode prev = (HtmlNode) _lastnodes[_currentnode.Name];
+                    HtmlNode prev = (HtmlNode)_lastnodes[_currentnode.Name];
                     _currentnode._prevwithsamename = prev;
                     _lastnodes[_currentnode.Name] = _currentnode;
 
@@ -1894,45 +1894,45 @@ namespace HtmlAgilityPack
             // <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
 
             // when we append a child, we are in node end, so attributes are already populated
-            if (node._namelength == 4) // quick check, avoids string alloc
+            if (node._namelength != 4) // quick check, avoids string alloc
+                return;
+            if (node.Name != "meta") // all nodes names are lowercase
+                return;
+            HtmlAttribute att = node.Attributes["http-equiv"];
+            if (att == null)
+                return;
+            if (string.Compare(att.Value, "content-type", true) != 0)
+                return;
+            HtmlAttribute content = node.Attributes["content"];
+            if (content != null)
             {
-                if (node.Name == "meta") // all nodes names are lowercase
+                string charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
+                if (!string.IsNullOrEmpty(charset))
                 {
-                    HtmlAttribute att = node.Attributes["http-equiv"];
-                    if (att != null)
+                    _declaredencoding = Encoding.GetEncoding(charset);
+                    if (_onlyDetectEncoding)
                     {
-                        if (string.Compare(att.Value, "content-type", true) == 0)
-                        {
-                            HtmlAttribute content = node.Attributes["content"];
-                            if (content != null)
-                            {
-                                string charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
-                                if (charset != null && (charset = charset.Trim()).Length > 0)
-                                {
-                                    _declaredencoding = Encoding.GetEncoding(charset.Trim());
-                                    if (_onlyDetectEncoding)
-                                    {
-                                        throw new EncodingFoundException(_declaredencoding);
-                                    }
+                        throw new EncodingFoundException(_declaredencoding);
+                    }
 
-                                    if (_streamencoding != null)
-                                    {
-                                        if (_declaredencoding.WindowsCodePage != _streamencoding.WindowsCodePage)
-                                        {
-                                            AddError(
-                                                HtmlParseErrorCode.CharsetMismatch,
-                                                _line, _lineposition,
-                                                _index, node.OuterHtml,
-                                                "Encoding mismatch between StreamEncoding: " +
-                                                _streamencoding.WebName + " and DeclaredEncoding: " +
-                                                _declaredencoding.WebName);
-                                        }
-                                    }
-                                }
-                            }
+                    if (_streamencoding != null)
+                    {
+                        if (_declaredencoding.WindowsCodePage != _streamencoding.WindowsCodePage)
+                        {
+                            AddError(
+                                HtmlParseErrorCode.CharsetMismatch,
+                                _line, _lineposition,
+                                _index, node.OuterHtml,
+                                "Encoding mismatch between StreamEncoding: " +
+                                _streamencoding.WebName + " and DeclaredEncoding: " +
+                                _declaredencoding.WebName);
                         }
                     }
                 }
+
+
+
+
             }
         }
 
