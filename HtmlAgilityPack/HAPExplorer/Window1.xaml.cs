@@ -31,7 +31,12 @@ namespace HAPExplorer
         public Window1()
         {
             InitializeComponent();
-            txtHtml.Text = File.ReadAllText("mshome.htm");
+            try
+            {
+                txtHtml.Text = File.ReadAllText("mshome.htm");
+            }catch
+            {
+            }
             InitializeFileDialog();
         }
 
