@@ -618,10 +618,21 @@ namespace HtmlAgilityPack
                                     {
                                         string e = entity.ToString();
                                         try
-                                        {
-                                            int code = Convert.ToInt32(e.Substring(1, e.Length - 1));
-                                            sb.Append(Convert.ToChar(code));
-                                        }
+ 										{
+											string codeStr = e.Substring(1).Trim().ToLower();
+											int fromBase;
+											if (codeStr.StartsWith("x"))
+											{
+												fromBase = 16;
+												codeStr = codeStr.Substring(1);
+											}
+											else
+											{
+												fromBase = 10;
+											}
+											int code = Convert.ToInt32(codeStr, fromBase);
+ 											sb.Append(Convert.ToChar(code));
+ 										}
                                         catch
                                         {
                                             sb.Append("&#" + e + ";");
