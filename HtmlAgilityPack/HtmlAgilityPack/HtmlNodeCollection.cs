@@ -444,17 +444,6 @@ namespace HtmlAgilityPack
         /// Get all node descended from this collection
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<HtmlNode> DescendantNodes()
-        {
-            foreach (HtmlNode item in _items)
-                foreach (HtmlNode n in item.DescendantNodes())
-                    yield return n;
-        }
-
-        /// <summary>
-        /// Get all node descended from this collection
-        /// </summary>
-        /// <returns></returns>
         public IEnumerable<HtmlNode> Descendants()
         {
             foreach (HtmlNode item in _items)
