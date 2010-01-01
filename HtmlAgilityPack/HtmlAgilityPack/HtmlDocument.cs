@@ -1909,6 +1909,10 @@ namespace HtmlAgilityPack
                 string charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
                 if (!string.IsNullOrEmpty(charset))
                 {
+                    // The following check fixes the the bug described at: http://htmlagilitypack.codeplex.com/WorkItem/View.aspx?WorkItemId=25273
+                    if (string.Equals(charset, "utf8", StringComparison.OrdinalIgnoreCase))
+                        charset = "utf-8";
+
                     _declaredencoding = Encoding.GetEncoding(charset);
                     if (_onlyDetectEncoding)
                     {
