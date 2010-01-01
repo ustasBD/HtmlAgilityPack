@@ -55,6 +55,7 @@ namespace HtmlAgilityPack
         private int _streamBufferSize = 1024;
         private bool _useCookies;
         private bool _usingCache;
+        private string _userAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:x.x.x) Gecko/20041107 Firefox/x.x";
 
         /// <summary>
         /// Occurs after an HTTP request has been executed.
@@ -70,6 +71,7 @@ namespace HtmlAgilityPack
         /// Occurs before an HTTP request is executed.
         /// </summary>
         public PreRequestHandler PreRequest;
+
 
         #endregion
 
@@ -832,6 +834,11 @@ namespace HtmlAgilityPack
         }
 
         /// <summary>
+        /// Gets or Sets the User Agent HTTP 1.1 header sent on any webrequest
+        /// </summary>
+        public string UserAgent { get { return _userAgent; } set { _userAgent = value; } }
+       
+        /// <summary>
         /// Gets or Sets a value indicating whether the caching mechanisms should be used or not.
         /// </summary>
         public bool UsingCache
@@ -914,7 +921,7 @@ namespace HtmlAgilityPack
                 return def;
             }
 
-            if (!SecurityManager.IsGranted(new DnsPermission(PermissionState.Unrestricted)))
+            if (SecurityManager.IsGranted(new RegistryPermission(PermissionState.Unrestricted)))
             {
                 try
                 {
@@ -1345,7 +1352,7 @@ namespace HtmlAgilityPack
 
             req = WebRequest.Create(uri) as HttpWebRequest;
             req.Method = method;
-
+            req.UserAgent = UserAgent;
             if (proxy != null)
             {
                 if (creds != null)
@@ -1586,5 +1593,6 @@ namespace HtmlAgilityPack
         }
 
         #endregion
+        
     }
 }
