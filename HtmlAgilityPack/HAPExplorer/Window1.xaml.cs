@@ -9,6 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using HtmlAgilityPack;
 using Microsoft.Win32;
+using System.Collections;
+using System.Collections.Generic;
 
 #endregion
 
@@ -46,6 +48,11 @@ namespace HAPExplorer
 
         private void btnParse_Click(object sender, RoutedEventArgs e)
         {
+            ParseHtml();
+        }
+
+        private void ParseHtml()
+        {
             if (txtHtml.Text.IsEmpty()) return;
 
             _html = new HtmlDocument();
@@ -56,7 +63,14 @@ namespace HAPExplorer
 
         private void btnSearch_Click(object sender, RoutedEventArgs e)
         {
-            SearchFromNode(_html.DocumentNode);
+            HtmlNode node = _html.DocumentNode;
+            if(chkFromCurrent.IsChecked == true
+                && hapTree.SelectedItem != null
+                && hapTree.SelectedItem is TreeViewItem 
+                && ((TreeViewItem)hapTree.SelectedItem).DataContext is HtmlNode)
+            node = ((TreeViewItem)hapTree.SelectedItem).DataContext as HtmlNode;
+
+            SearchFromNode(node);
         }
 
         private void btnTestCode_Click(object sender, RoutedEventArgs e)
@@ -91,13 +105,6 @@ namespace HAPExplorer
                 MessageBox.Show("Error loading file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error,
                                 MessageBoxResult.OK);
             }
-        }
-
-        private void button1_Click(object sender, RoutedEventArgs e)
-        {
-            if (hapTree.SelectedItem != null && hapTree.SelectedItem is TreeViewItem &&
-                ((TreeViewItem) hapTree.SelectedItem).DataContext is HtmlNode)
-                SearchFromNode(((TreeViewItem) hapTree.SelectedItem).DataContext as HtmlNode);
         }
 
         private string GetHtml(string link)
@@ -206,7 +213,20 @@ namespace HAPExplorer
 
         private void SearchFromNode(HtmlNode baseNode)
         {
-            var nodes = baseNode.Descendants(txtSearchTag.Text);
+            IEnumerable<HtmlNode> nodes = Enumerable.Empty<HtmlNode>();
+
+            if (!_html.DocumentNode.HasChildNodes) 
+                ParseHtml();
+
+            if(chkXPath.IsChecked == true)
+                nodes = baseNode.SelectNodes(txtSearchTag.Text);
+            else
+                nodes = baseNode.Descendants(txtSearchTag.Text);
+
+            if (nodes == null) return;
+
+            listResults.Items.Clear();
+
             foreach (var node in nodes)
             {
                 var tr = new NodeTreeView {BaseNode = node};
