@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AFD07A75-912E-4F74-BE5B-E6F21EE93B03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HtmlAgilityPack VS2008", "HtmlAgilityPack\HtmlAgilityPack VS2008.csproj", "{193BB801-054F-4729-9D5D-FCE1E32594BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HtmlAgilityPack", "HtmlAgilityPack\HtmlAgilityPack.csproj", "{193BB801-054F-4729-9D5D-FCE1E32594BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocLinks VS2008", "GetDocLinks\GetDocLinks VS2008.csproj", "{EA9372AB-8795-414A-B897-F777A8833CF4}"
 EndProject

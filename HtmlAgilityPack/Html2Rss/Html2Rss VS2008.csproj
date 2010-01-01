@@ -72,7 +72,7 @@
     <Content Include="www.asp.net.ToRss.xsl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HtmlAgilityPack\HtmlAgilityPack VS2008.csproj">
+    <ProjectReference Include="..\HtmlAgilityPack\HtmlAgilityPack.csproj">
       <Project>{193BB801-054F-4729-9D5D-FCE1E32594BF}</Project>
       <Name>HtmlAgilityPack VS2008</Name>
     </ProjectReference>
