@@ -636,10 +636,9 @@ namespace HtmlAgilityPack
         /// <param name="path">The complete file path to be read. May not be null.</param>
         public void Load(string path)
         {
-            if (path == null)
-            {
+            if (path == null)            
                 throw new ArgumentNullException("path");
-            }
+            
             StreamReader sr = new StreamReader(path, OptionDefaultStreamEncoding);
             Load(sr);
             sr.Close();
@@ -653,9 +652,8 @@ namespace HtmlAgilityPack
         public void Load(string path, bool detectEncodingFromByteOrderMarks)
         {
             if (path == null)
-            {
                 throw new ArgumentNullException("path");
-            }
+            
             StreamReader sr = new StreamReader(path, detectEncodingFromByteOrderMarks);
             Load(sr);
             sr.Close();
@@ -669,13 +667,11 @@ namespace HtmlAgilityPack
         public void Load(string path, Encoding encoding)
         {
             if (path == null)
-            {
                 throw new ArgumentNullException("path");
-            }
+
             if (encoding == null)
-            {
                 throw new ArgumentNullException("encoding");
-            }
+
             StreamReader sr = new StreamReader(path, encoding);
             Load(sr);
             sr.Close();
@@ -690,13 +686,11 @@ namespace HtmlAgilityPack
         public void Load(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks)
         {
             if (path == null)
-            {
                 throw new ArgumentNullException("path");
-            }
+
             if (encoding == null)
-            {
                 throw new ArgumentNullException("encoding");
-            }
+
             StreamReader sr = new StreamReader(path, encoding, detectEncodingFromByteOrderMarks);
             Load(sr);
             sr.Close();
@@ -712,13 +706,11 @@ namespace HtmlAgilityPack
         public void Load(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks, int buffersize)
         {
             if (path == null)
-            {
                 throw new ArgumentNullException("path");
-            }
+
             if (encoding == null)
-            {
                 throw new ArgumentNullException("encoding");
-            }
+
             StreamReader sr = new StreamReader(path, encoding, detectEncodingFromByteOrderMarks, buffersize);
             Load(sr);
             sr.Close();
@@ -732,20 +724,14 @@ namespace HtmlAgilityPack
         {
             // all Load methods pass down to this one
             if (reader == null)
-            {
                 throw new ArgumentNullException("reader");
-            }
 
             _onlyDetectEncoding = false;
 
             if (OptionCheckSyntax)
-            {
                 _openednodes = new Hashtable();
-            }
             else
-            {
                 _openednodes = null;
-            }
 
             if (OptionUseIdAttribute)
             {
@@ -1912,8 +1898,14 @@ namespace HtmlAgilityPack
                     // The following check fixes the the bug described at: http://htmlagilitypack.codeplex.com/WorkItem/View.aspx?WorkItemId=25273
                     if (string.Equals(charset, "utf8", StringComparison.OrdinalIgnoreCase))
                         charset = "utf-8";
-
-                    _declaredencoding = Encoding.GetEncoding(charset);
+                    try
+                    {
+                        _declaredencoding = Encoding.GetEncoding(charset);
+                    }
+                    catch (ArgumentException)
+                    {
+                        _declaredencoding = null;
+                    }
                     if (_onlyDetectEncoding)
                     {
                         throw new EncodingFoundException(_declaredencoding);
