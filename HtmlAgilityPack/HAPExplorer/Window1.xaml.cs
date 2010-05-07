@@ -192,13 +192,16 @@ namespace HAPExplorer
             try
             {
                 Cursor = Cursors.Wait;
-                var req = (HttpWebRequest) WebRequest.Create(dialog.Url);
-                using (var resp = req.GetResponse().GetResponseStream())
-                using (var read = new StreamReader(resp))
-                {
-                    var txt = read.ReadToEnd();
-                    txtHtml.Text = txt;
-                }
+                //var req = (HttpWebRequest) WebRequest.Create(dialog.Url);
+                //using (var resp = req.GetResponse().GetResponseStream())
+                //using (var read = new StreamReader(resp))
+                //{
+                //    var txt = read.ReadToEnd();
+                //    txtHtml.Text = txt;
+                //}
+                var hw = new HtmlWeb();
+                _html = hw.Load(dialog.Url);
+                hapTree.BaseNode = _html.DocumentNode;
             }
             catch (Exception ex)
             {
