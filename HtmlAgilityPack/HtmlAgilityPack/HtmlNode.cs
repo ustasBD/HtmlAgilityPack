@@ -12,7 +12,7 @@ namespace HtmlAgilityPack
     /// Represents an HTML node.
     /// </summary>
     [DebuggerDisplay("Name: {OriginalName}}")]
-    public partial class HtmlNode 
+    public partial class HtmlNode : IHtmlBaseNode
     {
         #region Fields
 
@@ -113,7 +113,18 @@ namespace HtmlAgilityPack
             ElementsFlags.Add("br", HtmlElementFlag.Empty | HtmlElementFlag.Closed);
             ElementsFlags.Add("p", HtmlElementFlag.Empty | HtmlElementFlag.Closed);
         }
-
+        public HtmlNode(string name):this(HtmlNodeType.Element,null,-1)
+        {
+            Name = name;
+        }
+        public HtmlNode(string name, HtmlDocument document):this(HtmlNodeType.Element,document,-1)
+        {
+            Name = name;
+        }
+        public HtmlNode(string name, HtmlNodeType type, HtmlDocument document):this(type,document,-1)
+        {
+            Name = name;
+        }
         /// <summary>
         /// Initializes HtmlNode, providing type, owner and where it exists in a collection
         /// </summary>
@@ -144,7 +155,7 @@ namespace HtmlAgilityPack
                     break;
             }
 
-            if (_ownerdocument.Openednodes != null)
+            if (_ownerdocument !=null && _ownerdocument.Openednodes != null)
             {
                 if (!Closed)
                 {

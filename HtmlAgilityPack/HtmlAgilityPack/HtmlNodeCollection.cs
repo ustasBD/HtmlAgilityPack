@@ -23,11 +23,17 @@ namespace HtmlAgilityPack
         /// Initialize the HtmlNodeCollection with the base parent node
         /// </summary>
         /// <param name="parentnode">The base node of the collection</param>
-        public HtmlNodeCollection(HtmlNode parentnode)
+        public HtmlNodeCollection(HtmlNode parentnode):this()
         {
             _parentnode = parentnode; // may be null
         }
-
+        /// <summary>
+        /// Initialize the HtmlNodeCollection with the base parent node
+        /// </summary>
+        public HtmlNodeCollection()
+        {
+            
+        }
         #endregion
 
         #region Properties

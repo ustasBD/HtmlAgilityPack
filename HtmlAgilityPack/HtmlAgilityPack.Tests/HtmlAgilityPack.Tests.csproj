@@ -45,6 +45,7 @@
     <Compile Include="DynamicTests.cs" />
     <Compile Include="HtmlDocumentTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XpathTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="files\mshome.htm">

@@ -14,7 +14,7 @@ namespace HtmlAgilityPack
     /// Represents an HTML attribute.
     /// </summary>
     [DebuggerDisplay("Name: {OriginalName}, Value: {Value}")]
-    public class HtmlAttribute : IComparable
+    public class HtmlAttribute : IComparable, IHtmlBaseNode
     {
         #region Fields
 
@@ -242,6 +242,70 @@ namespace HtmlAgilityPack
         }
 
         #endregion
+
+
+        public bool HasAttributes
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public HtmlAttributeCollection Attributes
+        {
+            get { return new HtmlAttributeCollection(null); }
+        }
+
+        public HtmlNodeCollection ChildNodes
+        {
+            get { return new HtmlNodeCollection(null); }
+        }
+
+
+        public HtmlNodeType NodeType
+        {
+            get { return HtmlNodeType.Attribute; }
+        }
+
+        public string InnerText
+        {
+            get
+            {
+                return Value;
+            }
+            set
+            {
+                Value = value;
+            }
+        }
+
+
+        public HtmlNode ParentNode
+        {
+            get { return OwnerNode; }
+        }
+
+        public bool HasChildNodes
+        {
+            get { return false; }
+        }
+
+
+        public HtmlNode NextSibling
+        {
+            get { return null; }
+        }
+
+        public HtmlNode CloneNode(bool something)
+        {
+            return OwnerNode.CloneNode(something);
+        }
+
+        public HtmlNode PreviousSibling
+        {
+            get { return null; }
+        }
     }
 
     /// <summary>

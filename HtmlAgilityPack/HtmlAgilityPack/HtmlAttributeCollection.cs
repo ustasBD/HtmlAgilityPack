@@ -192,9 +192,9 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public void Add(string name, string value)
+        public HtmlAttribute Add(string name, string value)
         {
-            Append(name, value);
+           return Append(name, value);
         }
 
         /// <summary>

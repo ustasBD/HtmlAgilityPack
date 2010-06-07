@@ -31,9 +31,9 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="xpath">The XPath expression.</param>
         /// <returns>An <see cref="HtmlNodeCollection"/> containing a collection of nodes matching the <see cref="XPath"/> query, or <c>null</c> if no node matched the XPath expression.</returns>
-        public HtmlNodeCollection SelectNodes(string xpath)
+        public List<IHtmlBaseNode> SelectNodes(string xpath)
         {
-            HtmlNodeCollection list = new HtmlNodeCollection(null);
+            List<IHtmlBaseNode> list = new List<IHtmlBaseNode>();
 
             HtmlNodeNavigator nav = new HtmlNodeNavigator(_ownerdocument, this);
             XPathNodeIterator it = nav.Select(xpath);
@@ -42,10 +42,10 @@ namespace HtmlAgilityPack
                 HtmlNodeNavigator n = (HtmlNodeNavigator)it.Current;
                 list.Add(n.CurrentNode);
             }
-            if (list.Count == 0)
-            {
-                return null;
-            }
+            //if (list.Count == 0)
+            //{
+            //    return null;
+            //}
             return list;
         }
 
@@ -54,7 +54,7 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="xpath">The XPath expression. May not be null.</param>
         /// <returns>The first <see cref="HtmlNode"/> that matches the XPath query or a null reference if no matching node was found.</returns>
-        public HtmlNode SelectSingleNode(string xpath)
+        public IHtmlBaseNode SelectSingleNode(string xpath)
         {
             if (xpath == null)
             {

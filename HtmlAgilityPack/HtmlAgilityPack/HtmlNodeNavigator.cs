@@ -16,7 +16,7 @@ namespace HtmlAgilityPack
         #region Fields
 
         private int _attindex;
-        private HtmlNode _currentnode;
+        private IHtmlBaseNode _currentnode;
         private HtmlDocument _doc = new HtmlDocument();
         private HtmlNameTable _nametable = new HtmlNameTable();
 
@@ -34,30 +34,26 @@ namespace HtmlAgilityPack
         internal HtmlNodeNavigator(HtmlDocument doc, HtmlNode currentNode)
         {
             if (currentNode == null)
-            {
                 throw new ArgumentNullException("currentNode");
-            }
             if (currentNode.OwnerDocument != doc)
-            {
                 throw new ArgumentException(HtmlDocument.HtmlExceptionRefNotChild);
-            }
+
             InternalTrace(null);
 
             _doc = doc;
             Reset();
-            _currentnode = currentNode;
+            CurrentNode = currentNode;
         }
 
         private HtmlNodeNavigator(HtmlNodeNavigator nav)
         {
             if (nav == null)
-            {
                 throw new ArgumentNullException("nav");
-            }
+
             InternalTrace(null);
 
             _doc = nav._doc;
-            _currentnode = nav._currentnode;
+            CurrentNode = nav._currentnode;
             _attindex = nav._attindex;
             _nametable = nav._nametable; // REVIEW: should we do this?
         }
@@ -214,9 +210,10 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the current HTML node.
         /// </summary>
-        public HtmlNode CurrentNode
+        public IHtmlBaseNode CurrentNode
         {
             get { return _currentnode; }
+            private set { _currentnode = value; }
         }
 
         /// <summary>
@@ -432,11 +429,11 @@ namespace HtmlAgilityPack
         /// Gets the value of the HTML attribute with the specified LocalName and NamespaceURI.
         /// </summary>
         /// <param name="localName">The local name of the HTML attribute.</param>
-        /// <param name="namespaceURI">The namespace URI of the attribute. Unsupported with the HtmlNavigator implementation.</param>
+        /// <param name="namespaceUri">The namespace URI of the attribute. Unsupported with the HtmlNavigator implementation.</param>
         /// <returns>The value of the specified HTML attribute. String.Empty or null if a matching attribute is not found or if the navigator is not positioned on an element node.</returns>
-        public override string GetAttribute(string localName, string namespaceURI)
+        public override string GetAttribute(string localName, string namespaceUri)
         {
-            InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceURI);
+            InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceUri);
             HtmlAttribute att = _currentnode.Attributes[localName];
             if (att == null)
             {
@@ -495,8 +492,16 @@ namespace HtmlAgilityPack
 
             if (nav._doc == _doc)
             {
-                _currentnode = nav._currentnode;
-                _attindex = nav._attindex;
+                if(nav._attindex>-1)
+                {
+                    CurrentNode = nav._currentnode.Attributes[nav._attindex];
+                    _attindex = 0;
+                }
+                else
+                {
+                    CurrentNode = nav._currentnode;
+                    _attindex = nav._attindex;
+                }
                 InternalTrace(">true");
                 return true;
             }
@@ -509,11 +514,11 @@ namespace HtmlAgilityPack
         /// Moves to the HTML attribute with matching LocalName and NamespaceURI.
         /// </summary>
         /// <param name="localName">The local name of the HTML attribute.</param>
-        /// <param name="namespaceURI">The namespace URI of the attribute. Unsupported with the HtmlNavigator implementation.</param>
+        /// <param name="namespaceUri">The namespace URI of the attribute. Unsupported with the HtmlNavigator implementation.</param>
         /// <returns>true if the HTML attribute is found, otherwise, false. If false, the position of the navigator does not change.</returns>
-        public override bool MoveToAttribute(string localName, string namespaceURI)
+        public override bool MoveToAttribute(string localName, string namespaceUri)
         {
-            InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceURI);
+            InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceUri);
             int index = _currentnode.Attributes.GetAttributeIndex(localName);
             if (index == -1)
             {
@@ -541,7 +546,7 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = _currentnode.ParentNode.FirstChild;
+            CurrentNode = _currentnode.ParentNode.FirstChild;
             InternalTrace(">true");
             return true;
         }
@@ -573,7 +578,7 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = _currentnode.ChildNodes[0];
+            CurrentNode = _currentnode.ChildNodes[0];
             InternalTrace(">true");
             return true;
         }
@@ -604,7 +609,7 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = node;
+            CurrentNode = node;
             InternalTrace(">true");
             return true;
         }
@@ -634,7 +639,7 @@ namespace HtmlAgilityPack
             }
             InternalTrace("_c=" + _currentnode.CloneNode(false).OuterHtml);
             InternalTrace("_n=" + _currentnode.NextSibling.CloneNode(false).OuterHtml);
-            _currentnode = _currentnode.NextSibling;
+            CurrentNode = _currentnode.NextSibling;
             InternalTrace(">true");
             return true;
         }
@@ -679,7 +684,7 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = _currentnode.ParentNode;
+            CurrentNode = _currentnode.ParentNode;
             InternalTrace(">true");
             return true;
         }
@@ -695,7 +700,7 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = _currentnode.PreviousSibling;
+            CurrentNode = _currentnode.PreviousSibling;
             InternalTrace(">true");
             return true;
         }
@@ -705,7 +710,7 @@ namespace HtmlAgilityPack
         /// </summary>
         public override void MoveToRoot()
         {
-            _currentnode = _doc.DocumentNode;
+            CurrentNode = _doc.DocumentNode;
             InternalTrace(null);
         }
 
@@ -760,7 +765,7 @@ namespace HtmlAgilityPack
         private void Reset()
         {
             InternalTrace(null);
-            _currentnode = _doc.DocumentNode;
+            CurrentNode = _doc.DocumentNode;
             _attindex = -1;
         }
 

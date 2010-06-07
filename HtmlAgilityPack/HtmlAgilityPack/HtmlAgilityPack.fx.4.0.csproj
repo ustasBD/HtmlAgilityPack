@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="EncodingFoundException.cs" />
     <Compile Include="HtmlAttributeCollection.cs" />
+    <Compile Include="HtmlBaseNode.cs" />
     <Compile Include="HtmlCommentNode.cs" />
     <Compile Include="HtmlConsoleListener.cs" />
     <Compile Include="HtmlDocument.Xpath.cs" />
