@@ -1258,7 +1258,7 @@ namespace HtmlAgilityPack
 			string cachePath = null;
 			HttpWebRequest req;
 			bool oldFile = false;
-
+          
 			req = WebRequest.Create(uri) as HttpWebRequest;
 			req.Method = method;
 			req.UserAgent = UserAgent;
@@ -1415,16 +1415,16 @@ namespace HtmlAgilityPack
 				else
 				{
 					// try to work in-memory
-					if ((doc != null) && (html))
+					if (doc != null && html)
 					{
-						if (respenc != null)
-						{
-							doc.Load(s, respenc);
-						}
-						else
-						{
-							doc.Load(s, true);
-						}
+					    if (respenc == null)
+					    {
+					        doc.Load(s, true);
+					    }
+					    else
+					    {
+					        doc.Load(s, respenc);
+					    }
 					}
 				}
 				resp.Close();
@@ -1465,6 +1465,11 @@ namespace HtmlAgilityPack
 		{
 			return contentType.ToLower().StartsWith("text/html");
 		}
+
+        private bool IsGZipEncoding(string contentEncoding)
+        {
+            return contentEncoding.ToLower().StartsWith("gzip");
+        }
 
 		private HtmlDocument LoadUrl(Uri uri, string method, WebProxy proxy, NetworkCredential creds)
 		{

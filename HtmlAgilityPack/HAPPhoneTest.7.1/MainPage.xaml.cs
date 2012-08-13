@@ -32,14 +32,18 @@ namespace HAPPhoneTest
 			//                                                                                x =>
 			//                                                                                x.GetAttributeValue("href", "")).ToArray());
 			//                                            });
-			HtmlWeb.LoadAsync("http://www.google.com", SiteLoaded);
+		    var web = new HtmlWeb();
+		    web.LoadCompleted += SiteLoaded;
+		    web.LoadAsync("http://www.google.com");
+//			HtmlWeb.LoadAsync("http://www.google.com", SiteLoaded);
 		}
 		public void SiteLoaded(object sender, HtmlDocumentLoadCompleted args)
 		{
-			var nodes = args.Document.DocumentNode.SelectNodes("//a");
-			Results.Text = String.Join(Environment.NewLine, nodes.ToList()
-															.Select(x=>x.GetAttributeValue("href",string.Empty))
-															.ToList());
-		}
+            /*var nodes = args.Document.DocumentNode.SelectNodes("//a");
+            Results.Text = String.Join(Environment.NewLine, nodes.ToList()
+                                                            .Select(x=>x.GetAttributeValue("href",string.Empty))
+                                                            .ToList());
+             * */
+        }
 	}
 }
