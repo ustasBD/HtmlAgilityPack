@@ -83,8 +83,7 @@ namespace HtmlAgilityPack
                 _name = value;
                 if (_ownernode != null)
                 {
-                    _ownernode._innerchanged = true;
-                    _ownernode._outerchanged = true;
+                    _ownernode.SetChanged();
                 }
             }
         }
@@ -148,8 +147,7 @@ namespace HtmlAgilityPack
                 _value = value;
                 if (_ownernode != null)
                 {
-                    _ownernode._innerchanged = true;
-                    _ownernode._outerchanged = true;
+                    _ownernode.SetChanged();
                 }
             }
         }

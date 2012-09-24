@@ -20,7 +20,7 @@ namespace HtmlAgilityPack
 		internal HtmlNodeCollection _childnodes;
 		internal HtmlNode _endnode;
 
-		internal bool _innerchanged;
+        private bool _changed;
 		internal string _innerhtml;
 		internal int _innerlength;
 		internal int _innerstartindex;
@@ -31,7 +31,6 @@ namespace HtmlAgilityPack
 		internal int _namestartindex;
 		internal HtmlNode _nextnode;
 		internal HtmlNodeType _nodetype;
-		internal bool _outerchanged;
 		internal string _outerhtml;
 		internal int _outerlength;
 		internal int _outerstartindex;
@@ -161,8 +160,7 @@ namespace HtmlAgilityPack
 
 			if ((-1 != index) || (type == HtmlNodeType.Comment) || (type == HtmlNodeType.Text)) return;
 			// innerhtml and outerhtml must be calculated
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 		}
 
 		#endregion
@@ -325,10 +323,9 @@ namespace HtmlAgilityPack
 		{
 			get
 			{
-				if (_innerchanged)
+				if (_changed)
 				{
-					_innerhtml = WriteContentTo();
-					_innerchanged = false;
+                    UpdateHtml();
 					return _innerhtml;
 				}
 
@@ -459,10 +456,9 @@ namespace HtmlAgilityPack
 		{
 			get
 			{
-				if (_outerchanged)
+				if (_changed)
 				{
-					_outerhtml = WriteTo();
-					_outerchanged = false;
+                    UpdateHtml();
 					return _outerhtml;
 				}
 
@@ -739,8 +735,7 @@ namespace HtmlAgilityPack
 
 			ChildNodes.Append(newChild);
 			_ownerdocument.SetIdForNode(newChild, newChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return newChild;
 		}
 
@@ -1142,8 +1137,7 @@ namespace HtmlAgilityPack
 			if (_childnodes != null) _childnodes.Insert(index + 1, newChild);
 
 			_ownerdocument.SetIdForNode(newChild, newChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return newChild;
 		}
 
@@ -1185,8 +1179,7 @@ namespace HtmlAgilityPack
 			if (_childnodes != null) _childnodes.Insert(index, newChild);
 
 			_ownerdocument.SetIdForNode(newChild, newChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return newChild;
 		}
 
@@ -1203,8 +1196,7 @@ namespace HtmlAgilityPack
 			}
 			ChildNodes.Prepend(newChild);
 			_ownerdocument.SetIdForNode(newChild, newChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return newChild;
 		}
 
@@ -1253,8 +1245,7 @@ namespace HtmlAgilityPack
 					_endnode._attributes.Clear();
 				}
 			}
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 		}
 
 		/// <summary>
@@ -1276,8 +1267,7 @@ namespace HtmlAgilityPack
 				}
 			}
 			_childnodes.Clear();
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 		}
 
 		/// <summary>
@@ -1308,8 +1298,7 @@ namespace HtmlAgilityPack
 				_childnodes.Remove(index);
 
 			_ownerdocument.SetIdForNode(null, oldChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return oldChild;
 		}
 
@@ -1338,8 +1327,7 @@ namespace HtmlAgilityPack
 				}
 			}
 			RemoveChild(oldChild);
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return oldChild;
 		}
 
@@ -1377,11 +1365,9 @@ namespace HtmlAgilityPack
 
 			_ownerdocument.SetIdForNode(null, oldChild.GetId());
 			_ownerdocument.SetIdForNode(newChild, newChild.GetId());
-			_outerchanged = true;
-			_innerchanged = true;
+            SetChanged();
 			return newChild;
 		}
-
 
 		/// <summary>
 		/// Helper method to set the value of an attribute of this node. If the attribute is not found, it will be created automatically.
@@ -1648,6 +1634,22 @@ namespace HtmlAgilityPack
 
 		#region Internal Methods
 
+        internal void SetChanged()
+        {
+            _changed = true;
+            if (ParentNode != null)
+            {
+                ParentNode.SetChanged();
+            }
+        }
+
+        private void UpdateHtml()
+        {
+            _innerhtml = WriteContentTo();
+            _outerhtml = WriteTo();
+            _changed = false;
+        }
+
 		internal static string GetXmlComment(HtmlCommentNode comment)
 		{
 			string s = comment.Comment;
@@ -1724,7 +1726,7 @@ namespace HtmlAgilityPack
 			HtmlAttribute att = Attributes["id"] ?? _ownerdocument.CreateAttribute("id");
 			att.Value = id;
 			_ownerdocument.SetIdForNode(this, att.Value);
-			_outerchanged = true;
+            SetChanged();
 		}
 
 		internal void WriteAttribute(TextWriter outText, HtmlAttribute att)
