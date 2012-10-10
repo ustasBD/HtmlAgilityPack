@@ -30,6 +30,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>HtmlAgilityPack.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.0.12054\lib\nunit.framework.dll</HintPath>
@@ -44,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HtmlDocumentTests.cs" />
+    <Compile Include="HtmlNode.Tests.cs" />
     <Compile Include="NestedOptionsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -56,6 +63,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="HtmlAgilityPack.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

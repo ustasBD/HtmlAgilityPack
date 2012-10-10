@@ -61,24 +61,24 @@ namespace HtmlAgilityPack.Tests
 			Assert.AreEqual("http://something.com", a.Value);
 		}
 
-		[Test]
-		public void CreateComment()
-		{
-			var doc = new HtmlDocument();
-			var a = doc.CreateComment();
-			Assert.AreEqual(HtmlNode.HtmlNodeTypeNameComment, a.Name);
-			Assert.AreEqual(a.NodeType, HtmlNodeType.Comment);
-		}
+		//[Test]
+		//public void CreateComment()
+		//{
+		//    var doc = new HtmlDocument();
+		//    var a = doc.CreateComment();
+		//    Assert.AreEqual(HtmlNode.HtmlNodeTypeNameComment, a.Name);
+		//    Assert.AreEqual(a.NodeType, HtmlNodeType.Comment);
+		//}
 
-		[Test]
-		public void CreateCommentWithText()
-		{
-			var doc = new HtmlDocument();
-			var a = doc.CreateComment("something");
-			Assert.AreEqual(HtmlNode.HtmlNodeTypeNameComment, a.Name);
-			Assert.AreEqual("something", a.InnerText);
-			Assert.AreEqual(a.NodeType, HtmlNodeType.Comment);
-		}
+		//[Test]
+		//public void CreateCommentWithText()
+		//{
+		//    var doc = new HtmlDocument();
+		//    var a = doc.CreateComment("something");
+		//    Assert.AreEqual(HtmlNode.HtmlNodeTypeNameComment, a.Name);
+		//    Assert.AreEqual("something", a.InnerText);
+		//    Assert.AreEqual(a.NodeType, HtmlNodeType.Comment);
+		//}
 
 		[Test]
 		public void CreateElement()
@@ -89,14 +89,14 @@ namespace HtmlAgilityPack.Tests
 			Assert.AreEqual(a.NodeType, HtmlNodeType.Element);
 		}
 
-		[Test]
-		public void CreateTextNode()
-		{
-			var doc = new HtmlDocument();
-			var a = doc.CreateTextNode();
-			Assert.AreEqual(HtmlNode.HtmlNodeTypeNameText, a.Name);
-			Assert.AreEqual(a.NodeType, HtmlNodeType.Text);
-		}
+		//[Test]
+		//public void CreateTextNode()
+		//{
+		//    var doc = new HtmlDocument();
+		//    var a = doc.CreateTextNode();
+		//    Assert.AreEqual(HtmlNode.HtmlNodeTypeNameText, a.Name);
+		//    Assert.AreEqual(a.NodeType, HtmlNodeType.Text);
+		//}
 
 		[Test]
 		public void CreateTextNodeWithText()

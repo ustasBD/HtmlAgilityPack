@@ -11,7 +11,7 @@ namespace HtmlAgilityPack
 	/// <summary>
 	/// Represents an HTML node.
 	/// </summary>
-	[DebuggerDisplay("Name: {OriginalName}}")]
+	[DebuggerDisplay("Name: {OriginalName}")]
 	public partial class HtmlNode
 	{
 		#region Fields
@@ -1744,7 +1744,8 @@ namespace HtmlAgilityPack
 			else
 			{
 				name = _ownerdocument.OptionOutputUpperCase ? att.Name.ToUpper() : att.Name;
-
+				if (_ownerdocument.OptionOutputOriginalCase)
+					name = att.OriginalName;
 				if (att.Name.Length >= 4)
 				{
 					if ((att.Name[0] == '<') && (att.Name[1] == '%') &&
