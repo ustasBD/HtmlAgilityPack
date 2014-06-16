@@ -280,6 +280,11 @@ namespace HtmlAgilityPack
         {
             get
             {
+                if (_attindex != -1)
+                {
+                    InternalTrace("att>" + _currentnode.Attributes[_attindex].Name);
+                    return _nametable.GetOrAdd(_currentnode.Attributes[_attindex].Name);
+                }
                 InternalTrace(">" + _currentnode.Name);
                 return _nametable.GetOrAdd(_currentnode.Name);
             }
@@ -542,6 +547,7 @@ namespace HtmlAgilityPack
                 return false;
             }
             _currentnode = _currentnode.ParentNode.FirstChild;
+            _attindex = -1;
             InternalTrace(">true");
             return true;
         }
@@ -574,6 +580,7 @@ namespace HtmlAgilityPack
                 return false;
             }
             _currentnode = _currentnode.ChildNodes[0];
+            _attindex = -1;
             InternalTrace(">true");
             return true;
         }
@@ -605,6 +612,7 @@ namespace HtmlAgilityPack
                 return false;
             }
             _currentnode = node;
+            _attindex = -1;
             InternalTrace(">true");
             return true;
         }
@@ -635,6 +643,7 @@ namespace HtmlAgilityPack
             InternalTrace("_c=" + _currentnode.CloneNode(false).OuterHtml);
             InternalTrace("_n=" + _currentnode.NextSibling.CloneNode(false).OuterHtml);
             _currentnode = _currentnode.NextSibling;
+            _attindex = -1;
             InternalTrace(">true");
             return true;
         }
@@ -679,7 +688,14 @@ namespace HtmlAgilityPack
                 InternalTrace(">false");
                 return false;
             }
-            _currentnode = _currentnode.ParentNode;
+            if (_attindex >= 0)
+            {
+                _attindex = -1;
+            }
+            else
+            {
+                _currentnode = _currentnode.ParentNode;
+            }
             InternalTrace(">true");
             return true;
         }
@@ -696,6 +712,7 @@ namespace HtmlAgilityPack
                 return false;
             }
             _currentnode = _currentnode.PreviousSibling;
+            _attindex = -1;
             InternalTrace(">true");
             return true;
         }
@@ -706,6 +723,7 @@ namespace HtmlAgilityPack
         public override void MoveToRoot()
         {
             _currentnode = _doc.DocumentNode;
+            _attindex = -1;
             InternalTrace(null);
         }
 
