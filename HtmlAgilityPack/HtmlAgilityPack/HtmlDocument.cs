@@ -128,6 +128,13 @@ namespace HtmlAgilityPack
 		/// </summary>
 		public bool OptionWriteEmptyNodes;
 
+		/// <summary>
+		/// The max number of nested child nodes.
+		/// Added to prevent stackoverflow problem when a page has tens of thousands of opening html tags with no closing tags
+		/// Examples: http://e-compromise.com, http://stuartfamilytree.com
+		/// </summary>
+		public int OptionMaxNestedChildNodes = 0;
+
 		#endregion
 
 		#region Static Members

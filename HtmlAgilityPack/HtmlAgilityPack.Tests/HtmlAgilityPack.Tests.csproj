@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="HtmlDocumentTests.cs" />
     <Compile Include="HtmlNode.Tests.cs" />
-    <Compile Include="NestedOptionsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
