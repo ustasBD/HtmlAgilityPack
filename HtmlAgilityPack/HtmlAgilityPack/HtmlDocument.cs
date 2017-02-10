@@ -36,6 +36,7 @@ namespace HtmlAgilityPack
 		private int _remainderOffset;
 		private ParseState _state;
 		private Encoding _streamencoding;
+		private bool _isHtml5 = false;
 		internal string Text;
 
 		// public props
@@ -231,6 +232,11 @@ namespace HtmlAgilityPack
 		public Encoding StreamEncoding
 		{
 			get { return _streamencoding; }
+		}
+
+		public bool IsHtml5
+		{
+			get { return _isHtml5; }
 		}
 
 		#endregion
@@ -1651,55 +1657,66 @@ namespace HtmlAgilityPack
 			if (node.Name != "meta") // all nodes names are lowercase
 				return;
 			HtmlAttribute att = node.Attributes["http-equiv"];
-			if (att == null)
-				return;
-			if (string.Compare(att.Value, "content-type", StringComparison.OrdinalIgnoreCase) != 0)
-				return;
-			HtmlAttribute content = node.Attributes["content"];
-			if (content != null)
+			if (att != null) // html5 support
 			{
-				string charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
-				if (!string.IsNullOrEmpty(charset))
-				{
-					// The following check fixes the the bug described at: http://htmlagilitypack.codeplex.com/WorkItem/View.aspx?WorkItemId=25273
-					if (string.Equals(charset, "utf8", StringComparison.OrdinalIgnoreCase))
-						charset = "utf-8";
-					try
-					{
-						_declaredencoding = Encoding.GetEncoding(charset);
-					}
-					catch (ArgumentException)
-					{
-						_declaredencoding = null;
-					}
-					if (_onlyDetectEncoding)
-					{
-						throw new EncodingFoundException(_declaredencoding);
-					}
+				if (string.Compare(att.Value, "content-type", StringComparison.OrdinalIgnoreCase) != 0)
+					return;
+			}
+			string charset = null;
+			HtmlAttribute content = node.Attributes["content"];
+			charset = (content == null) ? node.GetAttributeValue("charset",null) : NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
 
-					if (_streamencoding != null)
-					{
-#if SILVERLIGHT || PocketPC || METRO
-						if (_declaredencoding.WebName != _streamencoding.WebName)
-#else
-						if (_declaredencoding != null)
-							if (_declaredencoding.WindowsCodePage != _streamencoding.WindowsCodePage)
-#endif
-							{
-								AddError(
-									HtmlParseErrorCode.CharsetMismatch,
-									_line, _lineposition,
-									_index, node.OuterHtml,
-									"Encoding mismatch between StreamEncoding: " +
-									_streamencoding.WebName + " and DeclaredEncoding: " +
-									_declaredencoding.WebName);
-							}
-					}
+			if (!string.IsNullOrEmpty(charset))
+			{
+				_isHtml5 = att == null;
+
+				if (_isHtml5)
+				{
+					node.Attributes.Add("http-equiv", "content-type");
+					node.Attributes.Remove("charset");
+					node.Attributes.Add("content", $"text/html;charset={charset}");
+					//content = "text/html;charset=UTF-8
 				}
 
 
 
+				// The following check fixes the the bug described at: http://htmlagilitypack.codeplex.com/WorkItem/View.aspx?WorkItemId=25273
+				if (string.Equals(charset, "utf8", StringComparison.OrdinalIgnoreCase))
+					charset = "utf-8";
 
+
+
+				try
+				{
+					_declaredencoding = Encoding.GetEncoding(charset);
+				}
+				catch (ArgumentException)
+				{
+					_declaredencoding = null;
+				}
+				if (_onlyDetectEncoding)
+				{
+					throw new EncodingFoundException(_declaredencoding);
+				}
+
+				if (_streamencoding != null)
+				{
+#if SILVERLIGHT || PocketPC || METRO
+						if (_declaredencoding.WebName != _streamencoding.WebName)
+#else
+					if (_declaredencoding != null)
+						if (_declaredencoding.WindowsCodePage != _streamencoding.WindowsCodePage)
+#endif
+						{
+							AddError(
+								HtmlParseErrorCode.CharsetMismatch,
+								_line, _lineposition,
+								_index, node.OuterHtml,
+								"Encoding mismatch between StreamEncoding: " +
+								_streamencoding.WebName + " and DeclaredEncoding: " +
+								_declaredencoding.WebName);
+						}
+				}
 			}
 		}
 

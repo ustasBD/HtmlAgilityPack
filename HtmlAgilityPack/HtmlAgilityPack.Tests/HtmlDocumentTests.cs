@@ -9,14 +9,26 @@ namespace HtmlAgilityPack.Tests
 	public class HtmlDocumentTests
 	{
 		private string _contentDirectory;
-		
-	
+
+
 
 		[TestFixtureSetUp]
 		public void Setup()
 		{
 			_contentDirectory = Directory.GetCurrentDirectory() + "\\files\\";
 		}
+
+		private string Get_html5_utf8_DocumentPath()
+		{
+			return _contentDirectory + "HTML5_UTF8.html";
+
+		}
+
+		private string Get_html5_w_1251_DocumentPath()
+		{
+			return _contentDirectory + "HTML5_w_1251.html";
+		}
+
 
 		private HtmlDocument GetMshomeDocument()
 		{
@@ -113,6 +125,50 @@ namespace HtmlAgilityPack.Tests
 			var result = HtmlDocument.HtmlEncode("http://something.com\"&<>");
 			Assert.AreEqual("http://something.com&quot;&amp;&lt;&gt;", result);
 		}
+
+		[Test]
+		public void EncDetection_UTF8()
+		{
+			{
+				var docPath = Get_html5_utf8_DocumentPath();
+
+				var doc = new HtmlDocument();
+				var enc = doc.DetectEncoding(docPath);
+
+				Assert.AreEqual(65001, enc.CodePage);
+				Assert.AreEqual(true, doc.IsHtml5);
+
+				doc.Load(docPath, enc);
+				doc.Save(_contentDirectory + "utf8.html");
+			}
+
+			var doc1 = new HtmlDocument();
+			var enc1 = doc1.DetectEncoding(_contentDirectory + "utf8.html");
+			Assert.AreEqual(65001, enc1.CodePage);
+			Assert.AreEqual(false, doc1.IsHtml5);
+
+		}
+
+
+		[Test]
+		public void EncDetection_w_1251()
+		{
+			var docPath = Get_html5_w_1251_DocumentPath();
+			var doc = new HtmlDocument();
+			var enc = doc.DetectEncoding(docPath);
+			Assert.AreEqual(1251, enc.CodePage);
+			Assert.AreEqual(true, doc.IsHtml5);
+
+			doc.Load(docPath, enc);
+			doc.Save(_contentDirectory + "w-1251.html");
+
+			var doc1 = new HtmlDocument();
+			var enc1 = doc.DetectEncoding(_contentDirectory + "w-1251.html");
+			Assert.AreEqual(1251, enc1.CodePage);
+			Assert.AreEqual(false, doc1.IsHtml5);
+
+		}
+
 
 		[Test]
 		public void TestParse()
